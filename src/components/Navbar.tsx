@@ -8,8 +8,6 @@ import {
   IconHome, 
   IconUser, 
   IconMail, 
-  IconLogin, 
-  IconLogout, 
   IconDashboard 
 } from './Icons';
 import { useAuth } from '../contexts/AuthContext';
