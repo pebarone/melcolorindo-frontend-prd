@@ -79,7 +79,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             
             const hasAdminRole = 
               payload?.is_admin === true || 
-              parsedUser.is_admin === true ||
+              parsedUser.role === 'admin' ||
               payload?.role === 'admin' ||
               (payload?.roles as string[])?.includes('admin');
 
@@ -118,7 +118,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const userData: User = response.user || {
         id: payload?.sub as string || '',
         email: payload?.email as string || email,
-        is_admin: payload?.is_admin as boolean || response.is_admin,
+        role: (payload?.is_admin === true || response.is_admin === true) ? 'admin' : 'user',
       };
 
       localStorage.setItem(USER_KEY, JSON.stringify(userData));
@@ -129,7 +129,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const hasAdminRole = 
         payload?.is_admin === true || 
         response.is_admin === true || 
-        userData.is_admin === true ||
+        userData.role === 'admin' ||
         payload?.role === 'admin' ||
         (payload?.roles as string[])?.includes('admin');
 
@@ -156,7 +156,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setError(null);
 
     try {
-      const response = await authApi.register(email, password);
+      await authApi.register(email, password);
       
       // Após registro bem-sucedido, fazer login automaticamente
       await login(email, password);
