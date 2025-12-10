@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import type { ReactNode } from 'react';
 import { favoritesApi, type Product } from '../services/api';
 import { useAuth } from './AuthContext';
@@ -38,6 +38,9 @@ export function FavoritesProvider({ children }: FavoritesProviderProps) {
     return new Set(favorites.map(f => f.id));
   }, [favorites]);
 
+  // Ref para evitar chamadas simultâneas (método mais seguro que depender de isLoading)
+  const isLoadingRef = useRef(false);
+
   // Carregar favoritos do servidor
   const loadFavorites = useCallback(async () => {
     if (!isAuthenticated) {
@@ -46,8 +49,9 @@ export function FavoritesProvider({ children }: FavoritesProviderProps) {
       return;
     }
 
-    // Evitar múltiplas chamadas simultâneas
-    if (isLoading) return;
+    // Evitar múltiplas chamadas simultâneas usando ref
+    if (isLoadingRef.current) return;
+    isLoadingRef.current = true;
 
     try {
       setIsLoading(true);
@@ -60,8 +64,9 @@ export function FavoritesProvider({ children }: FavoritesProviderProps) {
       setError('Erro ao carregar favoritos');
     } finally {
       setIsLoading(false);
+      isLoadingRef.current = false;
     }
-  }, [isAuthenticated, isLoading]);
+  }, [isAuthenticated]); // Removido isLoading das dependências para evitar loop
 
   // Carregar favoritos quando autenticar
   useEffect(() => {

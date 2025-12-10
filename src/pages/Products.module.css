@@ -59,8 +59,15 @@
   gap: 2.5rem;
 }
 
+/* Alinha todos os cards para a mesma altura */
 .cardWrapper {
-  position: relative;
+  display: flex;
+  height: 100%;
+}
+
+.cardLink {
+  display: flex;
+  flex: 1;
 }
 
 .cardLink {
@@ -73,15 +80,20 @@
   background: white;
   border-radius: 24px;
   overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-  height: 100%;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
-  transition: box-shadow 0.3s;
+  flex: 1;
+  transition: box-shadow 0.3s ease, transform 0.15s ease;
+  position: relative;
+  /* Otimizações de performance para animações */
+  will-change: transform;
+  transform: translateZ(0);
+  contain: layout style;
 }
 
 .card:hover {
-  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
 }
 
 .cardImageWrapper {
@@ -94,7 +106,9 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.5s;
+  transition: transform 0.5s ease;
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 .card:hover .cardImageWrapper img {
@@ -121,6 +135,14 @@
   font-size: 1.2rem;
   margin-bottom: 1rem;
   color: #333;
+  /* Altura fixa com truncamento para manter harmonia */
+  min-height: 2.8em;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .cardFooter {
@@ -145,12 +167,37 @@
 /* Card Actions (Footer com botão de favorito) */
 .cardActions {
   padding: 0 1.5rem 1.5rem 1.5rem;
-  margin-top: -0.5rem;
+  margin-top: auto;
+  padding-top: 0.5rem;
+  display: flex;
+  gap: 0.8rem;
+}
+
+/* Botão de WhatsApp */
+.whatsappBtn {
+  flex: 1;
+  height: 48px;
+  border-radius: 12px;
+  background: #25D366;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 2px 10px rgba(37, 211, 102, 0.2);
+  text-decoration: none;
+}
+
+.whatsappBtn:hover {
+  transform: translateY(-2px);
+  background: #20b356;
+  box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
 }
 
 /* Botão de favorito */
 .favoriteBtn {
-  width: 100%;
+  flex: 1;
   height: 48px;
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.95);
@@ -196,7 +243,7 @@
   background: white;
   border-radius: 24px;
   overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
 }
 
 .skeletonImage {
@@ -239,8 +286,12 @@
 }
 
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 /* Empty State */
@@ -250,7 +301,7 @@
   padding: 4rem 2rem;
   background: linear-gradient(135deg, #fff 0%, var(--color-violet-light) 100%);
   border-radius: 24px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
 }
 
 .emptyState h3 {
@@ -372,7 +423,7 @@
   position: absolute;
   top: 1rem;
   right: 1rem;
-  background: linear-gradient(135deg, #FFD700, #FFA500);
+  background: linear-gradient(135deg, #ffd700, #ffa500);
   color: #333;
   padding: 0.4rem 0.8rem;
   border-radius: 20px;
@@ -458,6 +509,99 @@
 
 /* Mobile responsivo */
 @media (max-width: 768px) {
+  .page {
+    padding: 1rem;
+  }
+
+  .header h1 {
+    font-size: 2rem;
+  }
+
+  .grid {
+    gap: 1rem;
+    /* 2 colunas no mobile para melhor aproveitamento */
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .cardWrapper {
+    display: flex;
+  }
+
+  .cardLink {
+    display: flex;
+    flex: 1;
+  }
+
+  .card {
+    border-radius: 16px;
+  }
+
+  .cardImageWrapper {
+    aspect-ratio: 1;
+  }
+
+  .cardInfo {
+    padding: 0.75rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .categoryTag {
+    font-size: 0.65rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .subcategoryTag {
+    font-size: 0.7rem;
+    padding: 0.15rem 0.5rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .cardInfo h3 {
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    min-height: 2.5em;
+    line-height: 1.25;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+  }
+
+  .cardFooter {
+    margin-top: auto;
+  }
+
+  .price {
+    font-size: 1rem;
+  }
+
+  .viewBtn {
+    font-size: 0.75rem;
+  }
+
+  /* Reduzir tamanho do coração no mobile */
+  .cardActions {
+    padding: 0 0.75rem 0.75rem 0.75rem;
+  }
+
+  .favoriteBtn {
+    height: 40px;
+    border-radius: 10px;
+  }
+
+  /* Ícone menor no mobile */
+  .favoriteBtn svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .featuredBadge {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+    top: 0.5rem;
+    right: 0.5rem;
+  }
+
   .pagination {
     gap: 0.5rem;
   }

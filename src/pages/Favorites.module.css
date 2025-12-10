@@ -268,9 +268,9 @@
   box-shadow: 0 4px 12px rgba(106, 76, 147, 0.3);
 }
 
-.favoriteBtn {
-  width: 48px;
-  height: 48px;
+.favoriteBtn, .removeBtn {
+  width: 56px;
+  height: 56px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -281,10 +281,15 @@
   transition: all 0.3s ease;
 }
 
-.favoriteBtn:hover {
+.favoriteBtn:hover, .removeBtn:hover {
   background: #ffe0e0;
   border-color: #ef9a9a;
   transform: scale(1.1);
+}
+
+.favoriteBtn svg, .removeBtn svg {
+  width: 32px;
+  height: 32px;
 }
 
 /* ============= RESPONSIVIDADE ============= */

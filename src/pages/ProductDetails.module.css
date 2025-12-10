@@ -145,6 +145,8 @@
 }
 
 .wishlistButton svg {
+  width: 28px;
+  height: 28px;
   transition: transform 0.3s;
 }
 
@@ -353,5 +355,66 @@
     width: 40px;
     height: 40px;
     font-size: 1.2rem;
+  }
+
+  .wishlistButton svg {
+    width: 32px;
+    height: 32px;
+  }
+
+  .container {
+    padding: 1rem;
+  }
+
+  .info h1 {
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .price {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .description {
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+  }
+
+  .actions {
+    gap: 0.8rem;
+    margin-bottom: 2rem;
+  }
+
+  .buyButton {
+    padding: 0.8rem;
+    font-size: 1rem;
+    border-radius: 10px;
+  }
+
+  .wishlistButton {
+    width: 50px;
+    border-radius: 10px;
+  }
+
+  /* Ícone maior no mobile para melhor usabilidade */
+  .wishlistButton svg {
+    width: 26px;
+    height: 26px;
+  }
+
+  .adminButton {
+    padding: 0 0.8rem;
+    font-size: 0.9rem;
+  }
+
+  .features {
+    gap: 0.8rem;
+  }
+
+  .featureItem {
+    padding: 0.6rem;
+    font-size: 0.9rem;
   }
 }

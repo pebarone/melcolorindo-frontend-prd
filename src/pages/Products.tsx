@@ -1,21 +1,16 @@
-import { useState, useEffect, useMemo } from 'react';
-import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { productsApi } from '../services/api';
 import type { Product } from '../services/api';
 import styles from './Products.module.css';
-import { getSubcategoryColor } from '../utils/subcategoryColors';
 import { useAuth } from '../contexts/AuthContext';
 import { useFavorites } from '../contexts/FavoritesContext';
-import { useShouldReduceAnimations } from '../hooks/useIsMobile';
-import { IconHeart } from '../components/Icons';
+import { ProductCard } from '../components/ProductCard';
 import { LoginModal } from '../components/LoginModal';
 import { RegisterModal } from '../components/RegisterModal';
 
 export const Products = () => {
   const { isAuthenticated } = useAuth();
   const { isFavorite, toggleFavorite } = useFavorites();
-  const shouldReduceAnimations = useShouldReduceAnimations();
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('Todos');
@@ -111,7 +106,7 @@ export const Products = () => {
 
   const totalPages = Math.ceil(totalProducts / itemsPerPage);
 
-  const handleFavoriteToggle = async (productId: string, event: React.MouseEvent) => {
+  const handleFavoriteToggle = useCallback(async (productId: string, event: React.MouseEvent) => {
     event.preventDefault();
     event.stopPropagation();
 
@@ -125,23 +120,23 @@ export const Products = () => {
     } catch (error) {
       console.error('Erro ao atualizar favoritos:', error);
     }
-  };
+  }, [isAuthenticated, toggleFavorite, setIsLoginModalOpen]);
 
-  const handleCategoryChange = (category: string) => {
+  const handleCategoryChange = useCallback((category: string) => {
     setSelectedCategory(category);
     setSelectedSubcategory(null);
     setCurrentPage(1);
-  };
+  }, []);
 
-  const handleSubcategoryChange = (subcategory: string | null) => {
+  const handleSubcategoryChange = useCallback((subcategory: string | null) => {
     setSelectedSubcategory(subcategory);
     setCurrentPage(1);
-  };
+  }, []);
 
-  const handlePageChange = (page: number) => {
+  const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  }, []);
 
   const getPaginationRange = () => {
     const delta = 2;
@@ -265,73 +260,16 @@ export const Products = () => {
         </div>
       ) : sortedProducts.length > 0 ? (
         <>
-          <motion.div 
-            layout={!shouldReduceAnimations}
-            className={styles.grid}
-          >
+          <div className={styles.grid}>
             {sortedProducts.map((product) => (
-              <div key={product.id} className={styles.cardWrapper}>
-                <Link to={`/produto/${product.id}`} className={styles.cardLink}>
-                  <motion.div
-                    layout={!shouldReduceAnimations}
-                    initial={shouldReduceAnimations ? false : { opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={shouldReduceAnimations ? undefined : { opacity: 0 }}
-                    whileHover={shouldReduceAnimations ? undefined : { y: -5 }}
-                    className={styles.card}
-                  >
-                    {/* Badge de destaque */}
-                    {product.is_featured && (
-                      <div className={styles.featuredBadge}>⭐ Destaque</div>
-                    )}
-                    
-                    <div className={styles.cardImageWrapper}>
-                      <img 
-                        src={product.image_url || '/placeholder.jpg'} 
-                        alt={product.name} 
-                        loading="lazy"
-                        decoding="async"
-                      />
-                    </div>
-                    <div className={styles.cardInfo}>
-                      <span className={styles.categoryTag}>{product.category}</span>
-                      {product.subcategory && (
-                        <span 
-                          className={styles.subcategoryTag}
-                          style={{
-                            backgroundColor: getSubcategoryColor(product.subcategory).bg,
-                            color: getSubcategoryColor(product.subcategory).text,
-                          }}
-                        >
-                          {product.subcategory}
-                        </span>
-                      )}
-                      <h3>{product.name}</h3>
-                      <div className={styles.cardFooter}>
-                        <span className={styles.price}>R$ {Number(product.price || 0).toFixed(2)}</span>
-                        <span className={styles.viewBtn}>Ver Detalhes</span>
-                      </div>
-                    </div>
-                    
-                    {/* Botão de favorito no footer */}
-                    <div className={styles.cardActions}>
-                      <button
-                        className={`${styles.favoriteBtn} ${isFavorite(product.id) ? styles.favoriteActive : ''}`}
-                        onClick={(e) => handleFavoriteToggle(product.id, e)}
-                        title={isFavorite(product.id) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
-                        aria-label={isFavorite(product.id) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
-                      >
-                        <IconHeart
-                          size={24}
-                          fill={isFavorite(product.id) ? 'currentColor' : 'none'}
-                        />
-                      </button>
-                    </div>
-                  </motion.div>
-                </Link>
-              </div>
+              <ProductCard
+                key={product.id}
+                product={product}
+                isFavorite={isFavorite(product.id)}
+                onFavoriteToggle={handleFavoriteToggle}
+              />
             ))}
-          </motion.div>
+          </div>
 
           {/* Paginação */}
           {totalPages > 1 && (

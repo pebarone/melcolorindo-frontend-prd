@@ -1,10 +1,25 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useFavorites } from '../contexts/FavoritesContext';
-import { useShouldReduceAnimations } from '../hooks/useIsMobile';
 import { IconHeart, IconHeartFilled, IconAlertCircle } from '../components/Icons';
 import styles from './Favorites.module.css';
 import { getSubcategoryColor } from '../utils/subcategoryColors';
+
+// Constantes de animação movidas para fora do componente para evitar recriação
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
 
 export const Favorites = () => {
   const { 
@@ -14,21 +29,6 @@ export const Favorites = () => {
     removeFavorite, 
     refreshFavorites 
   } = useFavorites();
-  const shouldReduceAnimations = useShouldReduceAnimations();
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: shouldReduceAnimations ? 0 : 0.1
-      }
-    }
-  };
-
-  const itemVariants = shouldReduceAnimations 
-    ? { hidden: {}, show: {} }
-    : { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
 
   const handleRemoveFavorite = async (productId: string) => {
     try {
@@ -82,7 +82,7 @@ export const Favorites = () => {
           <IconHeart size={64} color="#ccc" />
           <h2>Nenhum favorito ainda</h2>
           <p>Explore nossos produtos e adicione seus favoritos clicando no coração ❤️</p>
-          <Link to="/produto" className={styles.exploreBtn}>
+          <Link to="/produtos" className={styles.exploreBtn}>
             Explorar Produtos
           </Link>
         </div>

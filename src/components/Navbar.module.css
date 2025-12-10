@@ -53,6 +53,16 @@
   }
 }
 
+@media (max-width: 768px) {
+  .container {
+    padding: 0.8rem 1rem;
+  }
+  
+  .logo {
+    font-size: 1.3rem;
+  }
+}
+
 .navLink {
   position: relative;
   font-weight: 600;

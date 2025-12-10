@@ -408,6 +408,18 @@ export const Admin = () => {
   const handleToggleFeatured = async (product: Product) => {
     const newFeaturedState = !product.is_featured;
     
+    // Otimisticamente atualiza a UI antes da resposta da API
+    const updateLocalState = (isFeatured: boolean) => {
+      setProducts(prev => prev.map(p => 
+        p.id === product.id ? { ...p, is_featured: isFeatured } : p
+      ));
+      setFilteredProducts(prev => prev.map(p => 
+        p.id === product.id ? { ...p, is_featured: isFeatured } : p
+      ));
+    };
+
+    updateLocalState(newFeaturedState);
+
     try {
       await productsApi.toggleFeatured(product.id, newFeaturedState);
       toast.success(
@@ -415,8 +427,11 @@ export const Admin = () => {
           ? 'Produto adicionado aos destaques!' 
           : 'Produto removido dos destaques'
       );
-      loadProducts();
+      // Não recarrega tudo, apenas mantém o estado local atualizado
     } catch (err) {
+      // Reverte o estado local em caso de erro
+      updateLocalState(!newFeaturedState);
+
       if (err instanceof ApiError) {
         // Tratamento especial para erro de limite de destaques
         if (err.code === 'FEATURED_LIMIT_REACHED') {

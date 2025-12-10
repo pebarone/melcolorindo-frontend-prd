@@ -76,8 +76,11 @@ export const ProductDetails = () => {
   const generateWhatsAppLink = () => {
     if (!product) return '#';
     const phone = '5511972969552';
+    const baseUrl = import.meta.env.VITE_URL_PREFIX || window.location.origin;
+    const productLink = `${baseUrl}/produto/${product.id}`;
+
     const message = encodeURIComponent(
-      `Olá! Tenho interesse no produto: ${product.name} - R$ ${Number(product.price).toFixed(2)}`
+      `Olá! Tenho interesse no produto: ${product.name} - R$ ${Number(product.price).toFixed(2)}\n${productLink}`
     );
     return `https://wa.me/${phone}?text=${message}`;
   };
