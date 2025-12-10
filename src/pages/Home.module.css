@@ -278,43 +278,6 @@
 /* Carousel Styles */
 .carouselContainer {
   position: relative;
-  padding: 0 3rem;
-}
-
-.carouselBtn {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background: white;
-  border: none;
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  font-size: 2rem;
-  color: #333;
-  cursor: pointer;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-}
-
-.carouselBtn:hover {
-  background: var(--color-blue);
-  color: white;
-  transform: translateY(-50%) scale(1.1);
-  box-shadow: 0 8px 20px rgba(25, 130, 196, 0.3);
-}
-
-.prevBtn {
-  left: 0;
-}
-
-.nextBtn {
-  right: 0;
 }
 
 .carouselIndicators {
@@ -362,31 +325,20 @@
 
 .subcategory {
   display: inline-block;
-  background: var(--color-blue-light);
-  color: var(--color-blue);
   padding: 0.3rem 0.8rem;
   border-radius: 12px;
   font-size: 0.85rem;
   font-weight: 600;
   margin-bottom: 0.5rem;
+  width: fit-content;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Mobile adjustments for carousel */
 @media (max-width: 768px) {
-  .carouselContainer {
-    padding: 0;
-  }
-
-  .carouselBtn {
-    width: 40px;
-    height: 40px;
-    font-size: 1.5rem;
-  }
-
-  .prevBtn {
-    left: -5px;
-  }
-
   .nextBtn {
     right: -5px;
   }

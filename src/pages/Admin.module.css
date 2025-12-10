@@ -372,8 +372,10 @@
   width: 100%;
   max-width: 500px;
   max-height: 90vh;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
   position: relative;
+  overflow: hidden;
 }
 
 .productModal::before {
@@ -384,6 +386,7 @@
   right: 0;
   height: 4px;
   background: var(--rainbow-gradient);
+  z-index: 1;
 }
 
 .modalHeader {
@@ -391,6 +394,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 1.5rem 1.5rem 0;
+  flex-shrink: 0;
 }
 
 .modalHeader h2 {
@@ -429,9 +433,51 @@
 
 .modalForm {
   padding: 1.5rem;
+  padding-right: 1rem;
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* Scrollbar arco-íris personalizado para modalForm */
+.modalForm::-webkit-scrollbar {
+  width: 14px;
+}
+
+.modalForm::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.modalForm::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, 
+    #ff6b9d 0%,
+    #c44569 12.5%,
+    #feca57 25%,
+    #48dbfb 37.5%,
+    #0abde3 50%,
+    #1dd1a1 62.5%,
+    #00d2d3 75%,
+    #ff9ff3 87.5%,
+    #ff6b9d 100%
+  );
+  border-radius: 10px;
+  border: 3px solid white;
+}
+
+.modalForm::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, 
+    #ff6b9d 0%,
+    #c44569 12.5%,
+    #feca57 25%,
+    #48dbfb 37.5%,
+    #0abde3 50%,
+    #1dd1a1 62.5%,
+    #00d2d3 75%,
+    #ff9ff3 87.5%,
+    #ff6b9d 100%
+  );
 }
 
 .formGroup {
@@ -585,29 +631,38 @@
 
 .removeImage {
   position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  background: rgba(0, 0, 0, 0.6);
+  top: 0.75rem;
+  right: 0.75rem;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
   color: white;
-  border: none;
-  width: 28px;
-  height: 28px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s ease;
+  font-size: 18px;
+  font-weight: 700;
+  transition: all 0.3s ease;
+  line-height: 1;
+  padding: 0;
 }
 
 .removeImage:hover {
   background: var(--color-red);
+  border-color: var(--color-red);
+  transform: scale(1.1) rotate(90deg);
+  box-shadow: 0 4px 12px rgba(255, 0, 0, 0.4);
 }
 
 .modalActions {
   display: flex;
   gap: 1rem;
   padding: 0 1.5rem 1.5rem;
+  flex-shrink: 0;
 }
 
 .cancelBtn {
@@ -657,10 +712,14 @@
 /* Confirm Delete Modal */
 .confirmModal {
   background: white;
-  border-radius: 20px;
+  border-radius: 24px;
   padding: 2rem;
   max-width: 400px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
   text-align: center;
+  overflow: hidden;
 }
 
 .confirmModal svg {
@@ -767,13 +826,16 @@
 /* Subcategory Badge */
 .subcategoryBadge {
   display: inline-block;
-  background: var(--color-orange-light);
-  color: var(--color-orange);
   padding: 0.25rem 0.6rem;
   border-radius: 10px;
   font-size: 0.75rem;
   font-weight: 600;
   margin-top: 0.25rem;
+  width: fit-content;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Toggle Switch for Featured Products */

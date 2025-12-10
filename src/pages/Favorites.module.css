@@ -223,6 +223,11 @@
   border-radius: 20px;
   font-size: 0.875rem;
   font-weight: 500;
+  width: fit-content;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .category {
@@ -230,10 +235,7 @@
   color: #2e7d32;
 }
 
-.subcategory {
-  background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
-  color: #1565c0;
-}
+/* Subcategory: Cores serão aplicadas via inline style */
 
 /* ============= FOOTER ============= */
 

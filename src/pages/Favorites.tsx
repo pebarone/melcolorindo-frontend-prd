@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { favoritesApi, type Product } from '../services/api';
 import { IconHeart, IconHeartFilled, IconAlertCircle } from '../components/Icons';
 import styles from './Favorites.module.css';
+import { getSubcategoryColor } from '../utils/subcategoryColors';
 
 export const Favorites = () => {
   const [favorites, setFavorites] = useState<Product[]>([]);
@@ -152,7 +153,15 @@ export const Favorites = () => {
                 <div className={styles.meta}>
                   <span className={styles.category}>{product.category}</span>
                   {product.subcategory && (
-                    <span className={styles.subcategory}>{product.subcategory}</span>
+                    <span 
+                      className={styles.subcategory}
+                      style={{
+                        backgroundColor: getSubcategoryColor(product.subcategory).bg,
+                        color: getSubcategoryColor(product.subcategory).text,
+                      }}
+                    >
+                      {product.subcategory}
+                    </span>
                   )}
                 </div>
 

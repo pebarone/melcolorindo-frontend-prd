@@ -146,15 +146,16 @@ export const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }: RegisterModa
               <img src="/closeicon.svg" alt="Fechar" width={24} height={24} />
             </button>
 
-            <div className={styles.header}>
-              <div className={styles.iconWrapper}>
-                <IconUserPlus size={32} color="#6A4C93" />
+            <div className={styles.modalContent}>
+              <div className={styles.header}>
+                <div className={styles.iconWrapper}>
+                  <IconUserPlus size={32} color="#6A4C93" />
+                </div>
+                <h2>Criar Conta</h2>
+                <p>Cadastre-se para acessar recursos exclusivos</p>
               </div>
-              <h2>Criar Conta</h2>
-              <p>Cadastre-se para acessar recursos exclusivos</p>
-            </div>
 
-            <form className={styles.form} onSubmit={handleSubmit}>
+              <form className={styles.form} onSubmit={handleSubmit}>
               <div className={styles.inputGroup}>
                 <label htmlFor="register-email">Email</label>
                 <div className={`${styles.inputWrapper} ${touched.email && emailError ? styles.error : ''}`}>
@@ -280,6 +281,7 @@ export const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }: RegisterModa
                   Faça login
                 </button>
               </p>
+            </div>
             </div>
           </motion.div>
         </motion.div>

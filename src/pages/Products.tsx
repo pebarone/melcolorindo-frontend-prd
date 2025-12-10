@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { productsApi } from '../services/api';
 import type { Product } from '../services/api';
 import styles from './Products.module.css';
+import { getSubcategoryColor } from '../utils/subcategoryColors';
 
 export const Products = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -218,7 +219,15 @@ export const Products = () => {
                   <div className={styles.cardInfo}>
                     <span className={styles.categoryTag}>{product.category}</span>
                     {product.subcategory && (
-                      <span className={styles.subcategoryTag}>{product.subcategory}</span>
+                      <span 
+                        className={styles.subcategoryTag}
+                        style={{
+                          backgroundColor: getSubcategoryColor(product.subcategory).bg,
+                          color: getSubcategoryColor(product.subcategory).text,
+                        }}
+                      >
+                        {product.subcategory}
+                      </span>
                     )}
                     <h3>{product.name}</h3>
                     <div className={styles.cardFooter}>

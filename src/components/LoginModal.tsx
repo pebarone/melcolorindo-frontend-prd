@@ -136,15 +136,16 @@ export const LoginModal = ({ isOpen, onClose, onSwitchToRegister }: LoginModalPr
               <img src="/closeicon.svg" alt="Fechar" width={24} height={24} />
             </button>
 
-            <div className={styles.header}>
-              <div className={styles.iconWrapper}>
-                <IconLogin size={32} color="#6A4C93" />
+            <div className={styles.modalContent}>
+              <div className={styles.header}>
+                <div className={styles.iconWrapper}>
+                  <IconLogin size={32} color="#6A4C93" />
+                </div>
+                <h2>Bem-vindo de volta!</h2>
+                <p>Entre na sua conta para continuar</p>
               </div>
-              <h2>Bem-vindo de volta!</h2>
-              <p>Entre na sua conta para continuar</p>
-            </div>
 
-            <form className={styles.form} onSubmit={handleSubmit}>
+              <form className={styles.form} onSubmit={handleSubmit}>
               <div className={styles.inputGroup}>
                 <label htmlFor="login-email">Email</label>
                 <div className={`${styles.inputWrapper} ${emailError && touched.email ? styles.error : ''}`}>
@@ -242,6 +243,7 @@ export const LoginModal = ({ isOpen, onClose, onSwitchToRegister }: LoginModalPr
                   'Área restrita para administradores'
                 )}
               </p>
+            </div>
             </div>
           </motion.div>
         </motion.div>

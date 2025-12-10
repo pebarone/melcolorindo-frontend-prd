@@ -18,6 +18,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 import { ToastContainer } from '../components/Toast';
 import { useToast } from '../hooks/useToast';
+import { getSubcategoryColor } from '../utils/subcategoryColors';
 import styles from './Admin.module.css';
 
 // Modal de produto (criar/editar)
@@ -235,8 +236,9 @@ const ProductModal = ({ isOpen, product, onClose, onSave }: ProductModalProps) =
                     setImageFile(null);
                     setImagePreview(null);
                   }}
+                  aria-label="Remover imagem"
                 >
-                  <img src="/closeicon.svg" alt="Remover" width={16} height={16} />
+                  ✕
                 </button>
               </div>
             ) : (
@@ -573,7 +575,15 @@ export const Admin = () => {
                       <div className={styles.productInfo}>
                         <h4>{product.name}</h4>
                         {product.subcategory && (
-                          <span className={styles.subcategoryBadge}>{product.subcategory}</span>
+                          <span 
+                            className={styles.subcategoryBadge}
+                            style={{
+                              backgroundColor: getSubcategoryColor(product.subcategory).bg,
+                              color: getSubcategoryColor(product.subcategory).text,
+                            }}
+                          >
+                            {product.subcategory}
+                          </span>
                         )}
                       </div>
                     </div>

@@ -5,6 +5,7 @@ import { IconArrowRight } from '../components/Icons';
 import styles from './Home.module.css';
 import { productsApi } from '../services/api';
 import type { Product } from '../services/api';
+import { getSubcategoryColor } from '../utils/subcategoryColors';
 
 export const Home = () => {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
@@ -55,14 +56,6 @@ export const Home = () => {
   }, [featuredProducts.length, itemsPerSlide]);
 
   const maxSlides = Math.ceil(featuredProducts.length / itemsPerSlide);
-  
-  const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % maxSlides);
-  };
-
-  const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + maxSlides) % maxSlides);
-  };
 
   const getCurrentProducts = () => {
     const start = currentSlide * itemsPerSlide;
@@ -140,26 +133,6 @@ export const Home = () => {
           </div>
         ) : featuredProducts.length > 0 ? (
           <div className={styles.carouselContainer}>
-            {/* Botões de navegação - apenas se houver mais produtos que o visível */}
-            {maxSlides > 1 && (
-              <>
-                <button 
-                  className={`${styles.carouselBtn} ${styles.prevBtn}`}
-                  onClick={prevSlide}
-                  aria-label="Slide anterior"
-                >
-                  ‹
-                </button>
-                <button 
-                  className={`${styles.carouselBtn} ${styles.nextBtn}`}
-                  onClick={nextSlide}
-                  aria-label="Próximo slide"
-                >
-                  ›
-                </button>
-              </>
-            )}
-
             {/* Grid responsivo com produtos */}
             <div className={styles.grid}>
               <AnimatePresence mode="wait">
@@ -183,7 +156,15 @@ export const Home = () => {
                       <div className={styles.cardContent}>
                         <h3>{product.name}</h3>
                         {product.subcategory && (
-                          <span className={styles.subcategory}>{product.subcategory}</span>
+                          <span 
+                            className={styles.subcategory}
+                            style={{
+                              backgroundColor: getSubcategoryColor(product.subcategory).bg,
+                              color: getSubcategoryColor(product.subcategory).text,
+                            }}
+                          >
+                            {product.subcategory}
+                          </span>
                         )}
                         <p className={styles.price}>R$ {Number(product.price || 0).toFixed(2)}</p>
                       </div>
