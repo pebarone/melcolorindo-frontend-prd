@@ -37,20 +37,28 @@
   color: #555;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  transform: translateZ(0);
 }
 
-.catButton:hover {
-  border-color: var(--color-blue-light);
-  background: var(--color-blue-light);
-  color: var(--color-blue);
+@media (hover: hover) and (pointer: fine) {
+  .catButton:hover {
+    border-color: var(--color-blue-light);
+    background: var(--color-blue-light);
+    color: var(--color-blue);
+  }
 }
 
 .catButton.active {
   background: var(--rainbow-gradient);
   border: 2px solid transparent;
   color: white;
-  box-shadow: 0 4px 15px rgba(255, 89, 94, 0.3);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .catButton.active {
+    box-shadow: 0 4px 15px rgba(255, 89, 94, 0.3);
+  }
 }
 
 .grid {
@@ -80,20 +88,29 @@
   background: white;
   border-radius: 24px;
   overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
   flex: 1;
-  transition: box-shadow 0.3s ease, transform 0.15s ease;
+  transition: transform 0.15s ease, opacity 0.15s ease;
   position: relative;
-  /* Otimizações de performance para animações */
-  will-change: transform;
+  /* GPU acceleration for smooth animations */
+  will-change: transform, opacity;
   transform: translateZ(0);
+  backface-visibility: hidden;
   contain: layout style;
 }
 
-.card:hover {
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+/* Hover effects only for devices with true hover support */
+@media (hover: hover) and (pointer: fine) {
+  .card {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    transition: box-shadow 0.3s ease, transform 0.15s ease;
+  }
+  
+  .card:hover {
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  }
 }
 
 .cardImageWrapper {
@@ -106,13 +123,20 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.5s ease;
   will-change: transform;
   transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
-.card:hover .cardImageWrapper img {
-  transform: scale(1.1);
+/* Image zoom effect only for devices with true hover support */
+@media (hover: hover) and (pointer: fine) {
+  .cardImageWrapper img {
+    transition: transform 0.5s ease;
+  }
+  
+  .card:hover .cardImageWrapper img {
+    transform: scale(1.1);
+  }
 }
 
 .cardInfo {
@@ -184,15 +208,23 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.3s;
-  box-shadow: 0 2px 10px rgba(37, 211, 102, 0.2);
+  transition: transform 0.2s ease, background-color 0.2s ease;
   text-decoration: none;
+  transform: translateZ(0);
+  will-change: transform;
 }
 
-.whatsappBtn:hover {
-  transform: translateY(-2px);
-  background: #20b356;
-  box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+@media (hover: hover) and (pointer: fine) {
+  .whatsappBtn {
+    box-shadow: 0 2px 10px rgba(37, 211, 102, 0.2);
+    transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .whatsappBtn:hover {
+    transform: translateY(-2px) translateZ(0);
+    background: #20b356;
+    box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+  }
 }
 
 /* Botão de favorito */
@@ -207,31 +239,45 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.3s;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+  transform: translateZ(0);
+  will-change: transform;
 }
 
-.favoriteBtn:hover {
-  transform: translateY(-2px);
-  background: white;
-  border-color: var(--color-red);
-  box-shadow: 0 4px 15px rgba(255, 89, 94, 0.2);
+@media (hover: hover) and (pointer: fine) {
+  .favoriteBtn {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .favoriteBtn:hover {
+    transform: translateY(-2px) translateZ(0);
+    background: white;
+    border-color: var(--color-red);
+    box-shadow: 0 4px 15px rgba(255, 89, 94, 0.2);
+  }
 }
 
 .favoriteBtn.favoriteActive {
   background: var(--color-red);
   border-color: var(--color-red);
   color: white;
-  box-shadow: 0 4px 15px rgba(255, 89, 94, 0.3);
 }
 
-.favoriteBtn.favoriteActive:hover {
-  background: #c0392b;
-  border-color: #c0392b;
+@media (hover: hover) and (pointer: fine) {
+  .favoriteBtn.favoriteActive {
+    box-shadow: 0 4px 15px rgba(255, 89, 94, 0.3);
+  }
+  
+  .favoriteBtn.favoriteActive:hover {
+    background: #c0392b;
+    border-color: #c0392b;
+  }
 }
 
 .favoriteBtn svg {
-  transition: transform 0.3s;
+  transition: transform 0.2s ease;
+  will-change: transform;
 }
 
 .favoriteBtn:active svg {
@@ -341,18 +387,26 @@
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  transform: translateZ(0);
 }
 
-.subButton:hover {
-  background: var(--color-blue);
-  color: white;
+@media (hover: hover) and (pointer: fine) {
+  .subButton:hover {
+    background: var(--color-blue);
+    color: white;
+  }
 }
 
 .subButton.active {
   background: var(--color-blue);
   color: white;
-  box-shadow: 0 4px 10px rgba(25, 130, 196, 0.3);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .subButton.active {
+    box-shadow: 0 4px 10px rgba(25, 130, 196, 0.3);
+  }
 }
 
 .subcategoryTag {
@@ -451,15 +505,23 @@
   font-weight: 600;
   color: #333;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  transform: translateZ(0);
+  will-change: transform;
 }
 
-.pageBtn:hover:not(:disabled) {
-  background: var(--color-blue);
-  color: white;
-  border-color: var(--color-blue);
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(25, 130, 196, 0.2);
+@media (hover: hover) and (pointer: fine) {
+  .pageBtn {
+    transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .pageBtn:hover:not(:disabled) {
+    background: var(--color-blue);
+    color: white;
+    border-color: var(--color-blue);
+    transform: translateY(-2px) translateZ(0);
+    box-shadow: 0 5px 15px rgba(25, 130, 196, 0.2);
+  }
 }
 
 .pageBtn:disabled {
@@ -485,20 +547,28 @@
   font-weight: 600;
   color: #333;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  transform: translateZ(0);
 }
 
-.pageNumber:hover {
-  background: var(--color-blue-light);
-  border-color: var(--color-blue);
-  color: var(--color-blue);
+@media (hover: hover) and (pointer: fine) {
+  .pageNumber:hover {
+    background: var(--color-blue-light);
+    border-color: var(--color-blue);
+    color: var(--color-blue);
+  }
 }
 
 .pageNumber.active {
   background: var(--color-blue);
   color: white;
   border-color: var(--color-blue);
-  box-shadow: 0 5px 15px rgba(25, 130, 196, 0.3);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .pageNumber.active {
+    box-shadow: 0 5px 15px rgba(25, 130, 196, 0.3);
+  }
 }
 
 .pageDots {
