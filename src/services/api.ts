@@ -315,6 +315,21 @@ export const productsApi = {
     
     return normalizeProduct(data);
   },
+
+  /**
+   * Deleta múltiplos produtos (Admin)
+   */
+  deleteBulk: async (ids: string[]): Promise<{ message: string; deletedCount: number; deletedIds: string[] }> => {
+    const result = await fetchApi<{ message: string; deletedCount: number; deletedIds: string[] }>('/products/bulk', {
+      method: 'DELETE',
+      body: JSON.stringify({ ids }),
+    });
+    
+    // Invalidar cache de produtos
+    cacheService.invalidateProducts();
+    
+    return result;
+  },
 };
 
 // ============ Favorites API ============

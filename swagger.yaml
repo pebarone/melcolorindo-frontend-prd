@@ -9,14 +9,42 @@ info:
     - Sistema de favoritos para usuários
     - Paginação e filtros avançados
     - Subcategorias de produtos
+    - Upload e deleção em massa de produtos
+    - Rate limiting (usuários comuns limitados, administradores sem restrição)
   contact:
     name: Suporte API
-    
+
 servers:
   - url: http://localhost:3000
     description: Servidor de desenvolvimento
   - url: https://cat-logo-mvp-backend.onrender.com
     description: Servidor de produção
+
+x-rate-limiting:
+  description: |
+    **Rate Limiting (Limitação de Taxa de Requisições)**
+
+    A API implementa limitação de taxa de requisições para prevenir abuso e garantir disponibilidade:
+
+    **Para Usuários Comuns:**
+    - Limite Global: 100 requisições por IP a cada 15 minutos
+    - Limite de Autenticação: 20 requisições por IP a cada 15 minutos (endpoints /auth/*)
+
+    **Para Administradores:**
+    - SEM LIMITAÇÃO: Administradores autenticados não têm restrições de taxa de requisições
+    - Identificação: Usuários com role "admin" no token JWT são automaticamente liberados
+
+    **Headers de Resposta:**
+    - `RateLimit-Limit`: Número máximo de requisições permitidas
+    - `RateLimit-Remaining`: Número de requisições restantes no período
+    - `RateLimit-Reset`: Timestamp quando o limite será resetado
+
+    **Resposta ao Exceder o Limite (429 Too Many Requests):**
+    ```json
+    {
+      "error": "Muitas requisições deste IP, tente novamente mais tarde."
+    }
+    ```
 
 components:
   securitySchemes:
@@ -25,7 +53,7 @@ components:
       scheme: bearer
       bearerFormat: JWT
       description: Token JWT obtido através do endpoint de login
-      
+
   schemas:
     Product:
       type: object
@@ -67,7 +95,7 @@ components:
           format: date-time
           description: Data de criação do produto
           example: "2025-12-09T10:30:00Z"
-          
+
     ProductList:
       type: object
       properties:
@@ -87,7 +115,7 @@ components:
           type: integer
           description: Máximo de resultados por página
           example: 20
-          
+
     User:
       type: object
       properties:
@@ -111,7 +139,7 @@ components:
           format: date-time
           description: Data de criação do usuário
           example: "2025-12-01T08:00:00Z"
-          
+
     UserList:
       type: object
       properties:
@@ -131,7 +159,7 @@ components:
           type: integer
           description: Máximo de resultados por página
           example: 20
-          
+
     Favorite:
       type: object
       properties:
@@ -155,7 +183,7 @@ components:
           format: date-time
           description: Data em que foi adicionado aos favoritos
           example: "2025-12-09T10:30:00Z"
-          
+
     Error:
       type: object
       properties:
@@ -294,7 +322,7 @@ paths:
       summary: Listar produtos com paginação e filtros
       description: |
         Retorna uma lista paginada de produtos. Suporta filtros por categoria e subcategoria.
-        
+
         **Exemplos de uso:**
         - `/products` - Todos os produtos
         - `/products?maxResults=10` - Primeiros 10 produtos
@@ -342,7 +370,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-                
+
     post:
       tags:
         - Produtos
@@ -481,7 +509,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-                
+
     put:
       tags:
         - Produtos
@@ -558,7 +586,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-                
+
     delete:
       tags:
         - Produtos
@@ -690,6 +718,201 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
+  /products/bulk:
+    post:
+      tags:
+        - Produtos
+      summary: Criar múltiplos produtos em massa (Admin)
+      description: |
+        Cria vários produtos de uma vez no catálogo. Requer autenticação de administrador.
+        **IMPORTANTE:** 
+        - Este endpoint aceita multipart/form-data, igual ao upload comum de produtos
+        - Envie um campo `products` como string JSON contendo o array de produtos
+        - Envie múltiplas imagens no campo `images[]` (até 50 imagens)
+        - As imagens são associadas aos produtos por ordem de índice (primeira imagem = primeiro produto)
+        - Operação otimizada para grandes quantidades de produtos
+        - Ideal para adicionar vários produtos de uma vez, evitando múltiplas chamadas ao backend
+
+        **Fluxo recomendado no frontend:**
+        1. Usuário adiciona produtos localmente (sem fazer requisições)
+        2. Quando clicar em "Salvar", enviar todos os produtos e imagens de uma vez para este endpoint
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - products
+              properties:
+                products:
+                  type: string
+                  description: String JSON contendo o array de produtos
+                  example: '[{"name":"Chaveiro Mickey","price":15.99,"category":"Chaveiros","subcategory":"Disney","is_featured":false},{"name":"Chaveiro Minnie","price":15.99,"category":"Chaveiros","subcategory":"Disney"}]'
+                images:
+                  type: array
+                  description: Array de imagens (até 50). A ordem deve corresponder à ordem dos produtos no JSON
+                  items:
+                    type: string
+                    format: binary
+                  maxItems: 50
+            encoding:
+              images:
+                contentType: image/jpeg, image/png, image/gif, image/webp
+      responses:
+        "201":
+          description: Produtos criados com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "5 produto(s) criado(s) com sucesso"
+                  createdCount:
+                    type: integer
+                    description: Número de produtos criados
+                    example: 5
+                  products:
+                    type: array
+                    description: Lista dos produtos criados
+                    items:
+                      $ref: "#/components/schemas/Product"
+        "400":
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                invalidJson:
+                  value:
+                    error: "O campo products deve ser um JSON válido"
+                emptyArray:
+                  value:
+                    error: "O campo products deve ser um array com pelo menos um produto"
+                invalidProducts:
+                  value:
+                    error: "Todos os produtos devem ter nome, preço e categoria"
+                    invalidProducts: [{ "name": "Produto sem preço" }]
+        "401":
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                error: "Acesso negado: permissão insuficiente"
+        "500":
+          description: Erro interno do servidor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    delete:
+      tags:
+        - Produtos
+      summary: Deletar múltiplos produtos (Admin)
+      description: |
+        Remove vários produtos do catálogo em uma única operação. Requer autenticação de administrador.
+        **IMPORTANTE:** 
+        - As imagens associadas aos produtos também serão deletadas do Supabase Storage.
+        - Envie um array de IDs dos produtos a serem deletados no body da requisição.
+        - Operação otimizada para grandes quantidades de produtos.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - ids
+              properties:
+                ids:
+                  type: array
+                  description: Array com os IDs dos produtos a serem deletados
+                  items:
+                    type: string
+                    format: uuid
+                  minItems: 1
+                  example:
+                    [
+                      "123e4567-e89b-12d3-a456-426614174000",
+                      "223e4567-e89b-12d3-a456-426614174001",
+                    ]
+      responses:
+        "200":
+          description: Produtos deletados com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "3 produto(s) deletado(s) com sucesso"
+                  deletedCount:
+                    type: integer
+                    description: Número de produtos deletados
+                    example: 3
+                  deletedIds:
+                    type: array
+                    description: IDs dos produtos que foram deletados
+                    items:
+                      type: string
+                      format: uuid
+                    example:
+                      [
+                        "123e4567-e89b-12d3-a456-426614174000",
+                        "223e4567-e89b-12d3-a456-426614174001",
+                        "323e4567-e89b-12d3-a456-426614174002",
+                      ]
+        "400":
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                emptyArray:
+                  value:
+                    error: "O campo ids deve ser um array com pelo menos um ID"
+                invalidType:
+                  value:
+                    error: "Todos os IDs devem ser strings"
+        "401":
+          description: Não autorizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                error: "Acesso negado: permissão insuficiente"
+        "500":
+          description: Erro interno do servidor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
   # ==================== USUÁRIOS ====================
   /users:
     get:
@@ -698,7 +921,7 @@ paths:
       summary: Listar usuários com paginação (Admin)
       description: |
         Retorna uma lista paginada de usuários. Requer autenticação de administrador.
-        
+
         **Exemplos de uso:**
         - `/users` - Todos os usuários
         - `/users?maxResults=10` - Primeiros 10 usuários
@@ -830,7 +1053,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-                
+
     post:
       tags:
         - Favoritos
@@ -901,7 +1124,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-                
+
     delete:
       tags:
         - Favoritos
