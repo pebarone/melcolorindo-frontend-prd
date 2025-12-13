@@ -23,6 +23,22 @@ export const Products = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalProducts, setTotalProducts] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(6);
+  
+  // Dados globais para filtros (categorias/subcategorias)
+  const [allProductsData, setAllProductsData] = useState<Product[]>([]);
+
+  // Carregar dados globais para filtros
+  useEffect(() => {
+    const loadGlobalData = async () => {
+      try {
+        const data = await productsApi.getAll({ maxResults: 1000 });
+        setAllProductsData(data.products);
+      } catch (error) {
+        console.error('Erro ao carregar dados globais:', error);
+      }
+    };
+    loadGlobalData();
+  }, []);
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -59,21 +75,20 @@ export const Products = () => {
 
   // Extrair categorias e subcategorias únicas dos produtos
   const allCategories = useMemo(() => {
-    // Buscar todas as categorias da API (sem filtro)
-    const categories = new Set(products.map(p => p.category));
-    return ['Todos', ...Array.from(categories)];
-  }, [products]);
+    const categories = new Set(allProductsData.map(p => p.category));
+    return ['Todos', ...Array.from(categories).sort()];
+  }, [allProductsData]);
 
   const subcategories = useMemo(() => {
     if (selectedCategory === 'Todos') return [];
     
     const subs = new Set(
-      products
+      allProductsData
         .filter(p => p.category === selectedCategory && p.subcategory)
         .map(p => p.subcategory!)
     );
-    return Array.from(subs);
-  }, [products, selectedCategory]);
+    return Array.from(subs).sort();
+  }, [allProductsData, selectedCategory]);
 
   // Ordenar produtos com destaques no topo por padrão
   const sortedProducts = useMemo(() => {

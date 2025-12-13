@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -12,7 +12,9 @@ import {
   IconDelete, 
   IconUpload,
   IconAlert,
-  IconStar
+  IconStar,
+  IconCamera,
+  IconCheck
 } from '../components/Icons';
 import { productsApi, ApiError } from '../services/api';
 import type { Product } from '../services/api';
@@ -292,15 +294,30 @@ const ProductModal = ({ isOpen, product, onClose, onSave }: ProductModalProps) =
                       </button>
                     </div>
                   ) : (
-                    <label className={styles.imageUpload} style={{ background: 'white' }}>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageChange}
-                      />
-                      <IconUpload size={32} color="#999" />
-                      <p>Clique para <span>enviar uma imagem</span></p>
-                    </label>
+                    <div className={styles.uploadOptions} style={{ display: 'flex', gap: '1rem' }}>
+                      <label className={styles.imageUpload} style={{ background: 'white', flex: 1, cursor: 'pointer' }}>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageChange}
+                          style={{ display: 'none' }}
+                        />
+                        <IconUpload size={32} color="#999" />
+                        <p>Abrir <span>Galeria</span></p>
+                      </label>
+                      
+                      <label className={styles.imageUpload} style={{ background: 'white', flex: 1, cursor: 'pointer' }}>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          capture="environment"
+                          onChange={handleImageChange}
+                          style={{ display: 'none' }}
+                        />
+                        <IconCamera size={32} color="#999" />
+                        <p>Tirar <span>Foto</span></p>
+                      </label>
+                    </div>
                   )}
                 </div>
 
@@ -832,6 +849,27 @@ export const Admin = () => {
   const [isBulkProductModalOpen, setIsBulkProductModalOpen] = useState(false);
   const [mobileActionProduct, setMobileActionProduct] = useState<Product | null>(null);
   
+  // Selection Mode (Long Press) Ref
+  const longPressTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isLongPress = useRef(false);
+
+  const startPress = (id: string) => {
+    isLongPress.current = false;
+    longPressTimeout.current = setTimeout(() => {
+      isLongPress.current = true;
+      handleSelectOne(id);
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        navigator.vibrate(50);
+      }
+    }, 500);
+  };
+
+  const cancelPress = () => {
+    if (longPressTimeout.current) {
+      clearTimeout(longPressTimeout.current);
+    }
+  };
+  
   const toast = useToast();
 
   // Redirecionar se não for admin
@@ -1190,15 +1228,39 @@ export const Admin = () => {
         {selectedIds.size > 0 && (
           <div className={styles.bulkActions}>
             <span>{selectedIds.size} produtos selecionados</span>
-            <button 
-              className={styles.bulkDeleteBtn}
-              onClick={() => setIsBulkDeleteModalOpen(true)}
-            >
-              <span style={{display:'inline-flex', marginRight: 6}}>
-                <IconDelete size={16} color="white" />
-              </span>
-              Excluir Selecionados
-            </button>
+            <div style={{ display: 'flex', gap: '0.5rem', marginLeft: 'auto' }}>
+              <button
+                className={styles.bulkDeleteBtn}
+                style={{ background: '#6A4C93' }}
+                onClick={() => {
+                  const allSelected = displayedProducts.every(p => selectedIds.has(p.id));
+                  if (allSelected) {
+                    const newSelected = new Set(selectedIds);
+                    displayedProducts.forEach(p => newSelected.delete(p.id));
+                    setSelectedIds(newSelected);
+                  } else {
+                    const newSelected = new Set(selectedIds);
+                    displayedProducts.forEach(p => newSelected.add(p.id));
+                    setSelectedIds(newSelected);
+                  }
+                }}
+              >
+                <span style={{display:'inline-flex', marginRight: 6}}>
+                  <IconCheck size={16} color="white" />
+                </span>
+                {displayedProducts.length > 0 && displayedProducts.every(p => selectedIds.has(p.id)) ? 'Deselecionar' : 'Todos'}
+              </button>
+
+              <button 
+                className={styles.bulkDeleteBtn}
+                onClick={() => setIsBulkDeleteModalOpen(true)}
+              >
+                <span style={{display:'inline-flex', marginRight: 6}}>
+                  <IconDelete size={16} color="white" />
+                </span>
+                Excluir
+              </button>
+            </div>
           </div>
         )}
 
@@ -1342,14 +1404,47 @@ export const Admin = () => {
                   className={styles.mobileListItem}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  onClick={() => setMobileActionProduct(product)}
+                  style={{ 
+                    border: selectedIds.has(product.id) ? '2px solid #6A4C93' : '1px solid #eee',
+                    background: selectedIds.has(product.id) ? '#f3f0f7' : 'white'
+                  }}
+                  onPointerDown={() => startPress(product.id)}
+                  onPointerUp={cancelPress}
+                  onPointerLeave={cancelPress}
+                  onClick={() => {
+                    if (isLongPress.current) return;
+                    
+                    if (selectedIds.size > 0) {
+                      handleSelectOne(product.id);
+                    } else {
+                      setMobileActionProduct(product);
+                    }
+                  }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  <img 
-                    src={product.image_url || '/placeholder.jpg'} 
-                    alt={product.name} 
-                    className={styles.mobileProductImage}
-                  />
+                  <div style={{ position: 'relative' }}>
+                    <img 
+                      src={product.image_url || '/placeholder.jpg'} 
+                      alt={product.name} 
+                      className={styles.mobileProductImage}
+                    />
+                    {selectedIds.has(product.id) && (
+                      <div style={{
+                        position: 'absolute',
+                        top: 4,
+                        left: 4,
+                        background: '#6A4C93',
+                        borderRadius: '50%',
+                        width: 20,
+                        height: 20,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}>
+                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      </div>
+                    )}
+                  </div>
                   <div className={styles.mobileProductInfo}>
                     <div className={styles.mobileProductHeader}>
                       <h4 className={styles.mobileProductName}>{product.name}</h4>
