@@ -23,18 +23,19 @@ export const Products = () => {
     categories,
     isLoadingCategories,
     selectedCategory,
-    selectedSubcategory,
+    selectedSubcategories,
     sortBy,
     currentPage,
     itemsPerPage,
     setCategory,
-    setSubcategory,
+    toggleSubcategory,
     setSortBy,
     setCurrentPage,
     setItemsPerPage,
     clearFilters,
     hasActiveFilters,
     getTotalProductCount,
+    getAvailableSubcategories,
   } = useProductFilters();
   
   // Paginação
@@ -54,8 +55,8 @@ export const Products = () => {
           params.category = selectedCategory;
         }
 
-        if (selectedSubcategory) {
-          params.subcategory = selectedSubcategory;
+        if (selectedSubcategories.length > 0) {
+          params.subcategory = selectedSubcategories;
         }
 
         const data = await productsApi.getAll(params);
@@ -71,7 +72,7 @@ export const Products = () => {
     };
 
     loadProducts();
-  }, [currentPage, selectedCategory, selectedSubcategory, itemsPerPage]);
+  }, [currentPage, selectedCategory, selectedSubcategories, itemsPerPage]);
 
   // Ordenar produtos com destaques no topo por padrão
   const sortedProducts = useMemo(() => {
@@ -176,14 +177,15 @@ export const Products = () => {
           categories={categories}
           isLoadingCategories={isLoadingCategories}
           selectedCategory={selectedCategory}
-          selectedSubcategory={selectedSubcategory}
+          selectedSubcategories={selectedSubcategories}
           sortBy={sortBy}
           onCategoryChange={setCategory}
-          onSubcategoryChange={setSubcategory}
+          onSubcategoryToggle={toggleSubcategory}
           onSortChange={setSortBy}
           onClearFilters={clearFilters}
           hasActiveFilters={hasActiveFilters}
           getTotalProductCount={getTotalProductCount}
+          availableSubcategories={getAvailableSubcategories()} 
         />
 
         {/* Conteúdo Principal */}

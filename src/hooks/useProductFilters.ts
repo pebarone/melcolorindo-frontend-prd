@@ -10,7 +10,7 @@ export interface UseProductFiltersReturn {
   
   // Estado de filtros
   selectedCategory: string | null;
-  selectedSubcategory: string | null;
+  selectedSubcategories: string[];
   sortBy: SortOption;
   
   // Paginação
@@ -19,14 +19,14 @@ export interface UseProductFiltersReturn {
   
   // Actions
   setCategory: (category: string | null) => void;
-  setSubcategory: (subcategory: string | null) => void;
+  toggleSubcategory: (subcategory: string) => void;
   setSortBy: (sort: SortOption) => void;
   setCurrentPage: (page: number) => void;
   setItemsPerPage: (count: number) => void;
   clearFilters: () => void;
   
   // Helpers
-  getSubcategoriesForCategory: (category: string | null) => string[];
+  getAvailableSubcategories: () => string[];
   getCategoryCount: (category: string) => number;
   getTotalProductCount: () => number;
   hasActiveFilters: boolean;
@@ -43,7 +43,7 @@ export function useProductFilters(): UseProductFiltersReturn {
   
   // Estado de filtros
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
+  const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<SortOption>('default');
   
   // Paginação
@@ -71,12 +71,17 @@ export function useProductFilters(): UseProductFiltersReturn {
   // Resetar página ao mudar filtros
   const setCategory = useCallback((category: string | null) => {
     setSelectedCategory(category);
-    setSelectedSubcategory(null); // Reset subcategoria ao mudar categoria
+    // Não resetamos subcategorias pois elas são independentes/globais
     setCurrentPage(1);
   }, []);
 
-  const setSubcategory = useCallback((subcategory: string | null) => {
-    setSelectedSubcategory(subcategory);
+  const toggleSubcategory = useCallback((subcategory: string) => {
+    setSelectedSubcategories(prev => {
+      if (prev.includes(subcategory)) {
+        return prev.filter(s => s !== subcategory);
+      }
+      return [...prev, subcategory];
+    });
     setCurrentPage(1);
   }, []);
 
@@ -87,17 +92,26 @@ export function useProductFilters(): UseProductFiltersReturn {
 
   const clearFilters = useCallback(() => {
     setSelectedCategory(null);
-    setSelectedSubcategory(null);
+    setSelectedSubcategories([]);
     setSortBy('default');
     setCurrentPage(1);
   }, []);
 
   // Helpers
-  const getSubcategoriesForCategory = useCallback((category: string | null): string[] => {
-    if (!category) return [];
-    const found = categories.find(c => c.category === category);
-    return found?.subcategories || [];
-  }, [categories]);
+  const getAvailableSubcategories = useCallback((): string[] => {
+    // Se tem categoria selecionada, retorna apenas as dela
+    if (selectedCategory) {
+      const found = categories.find(c => c.category === selectedCategory);
+      return found?.subcategories || [];
+    }
+    
+    // Se não, retorna TODAS as subcategorias únicas
+    const allSubcategories = new Set<string>();
+    categories.forEach(cat => {
+      cat.subcategories.forEach(sub => allSubcategories.add(sub));
+    });
+    return Array.from(allSubcategories).sort();
+  }, [categories, selectedCategory]);
 
   const getCategoryCount = useCallback((category: string): number => {
     const found = categories.find(c => c.category === category);
@@ -109,8 +123,8 @@ export function useProductFilters(): UseProductFiltersReturn {
   }, [categories]);
 
   const hasActiveFilters = useMemo(() => {
-    return selectedCategory !== null || selectedSubcategory !== null || sortBy !== 'default';
-  }, [selectedCategory, selectedSubcategory, sortBy]);
+    return selectedCategory !== null || selectedSubcategories.length > 0 || sortBy !== 'default';
+  }, [selectedCategory, selectedSubcategories, sortBy]);
 
   return {
     // Dados de categorias
@@ -119,7 +133,7 @@ export function useProductFilters(): UseProductFiltersReturn {
     
     // Estado de filtros
     selectedCategory,
-    selectedSubcategory,
+    selectedSubcategories,
     sortBy,
     
     // Paginação
@@ -128,14 +142,14 @@ export function useProductFilters(): UseProductFiltersReturn {
     
     // Actions
     setCategory,
-    setSubcategory,
+    toggleSubcategory,
     setSortBy,
     setCurrentPage,
     setItemsPerPage: handleSetItemsPerPage,
     clearFilters,
     
     // Helpers
-    getSubcategoriesForCategory,
+    getAvailableSubcategories,
     getCategoryCount,
     getTotalProductCount,
     hasActiveFilters,

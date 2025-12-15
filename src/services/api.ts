@@ -372,7 +372,7 @@ export interface ProductsQueryParams {
   maxResults?: number;
   page?: number;
   category?: string;
-  subcategory?: string;
+  subcategory?: string | string[];
 }
 
 export interface CategoryInfo {
@@ -388,6 +388,53 @@ export const productsApi = {
    * @param useCache - Se deve usar cache (padrão: true)
    */
   getAll: async (params?: ProductsQueryParams, useCache = true): Promise<ProductList> => {
+    // Caso especial: Múltiplas subcategorias (Lógica OR no frontend)
+    if (params?.subcategory && Array.isArray(params.subcategory) && params.subcategory.length > 0) {
+      if (params.subcategory.length === 1) {
+        // Se for apenas uma, trata como string simples (comportamento padrão)
+        return productsApi.getAll({ ...params, subcategory: params.subcategory[0] }, useCache);
+      }
+
+      // Para múltiplas, buscamos TODAS para fazer o merge e paginação manual
+      // Limitamos a 100 itens por subcategoria para não sobrecarregar (MVP)
+      const promises = params.subcategory.map(sub => {
+        const singleParams = { ...params, subcategory: sub, maxResults: 100, page: 1 };
+        return productsApi.getAll(singleParams, useCache);
+      });
+
+      try {
+        const results = await Promise.all(promises);
+        
+        // Combinar produtos (evitando duplicatas se houver, embora a regra seja 1:1)
+        const allProducts = new Map<string, Product>();
+        results.forEach(res => {
+          res.products.forEach(p => allProducts.set(p.id, p));
+        });
+        
+        const combinedProducts = Array.from(allProducts.values());
+        
+        // Paginação manual
+        const page = params.page || 1;
+        const maxResults = params.maxResults || 20;
+        const total = combinedProducts.length;
+        
+        const start = (page - 1) * maxResults;
+        const end = start + maxResults;
+        const paginatedProducts = combinedProducts.slice(start, end);
+        
+        return {
+          products: paginatedProducts,
+          total: total,
+          page: page,
+          maxResults: maxResults
+        };
+      } catch (error) {
+        console.error('Erro ao buscar múltiplas subcategorias:', error);
+        throw error;
+      }
+    }
+
+    // Comportamento padrão (Single subcategory ou nenhuma)
     let endpoint = '/products';
     
     if (params) {
@@ -395,7 +442,10 @@ export const productsApi = {
       if (params.maxResults) queryParams.append('maxResults', params.maxResults.toString());
       if (params.page) queryParams.append('page', params.page.toString());
       if (params.category) queryParams.append('category', params.category);
-      if (params.subcategory) queryParams.append('subcategory', params.subcategory);
+      // Se chegou aqui como string
+      if (params.subcategory && typeof params.subcategory === 'string') {
+        queryParams.append('subcategory', params.subcategory);
+      }
       
       const queryString = queryParams.toString();
       if (queryString) endpoint += `?${queryString}`;

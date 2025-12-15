@@ -116,7 +116,7 @@ export const Favorites = () => {
               whileHover={{ y: -8, boxShadow: "0 8px 24px rgba(0, 0, 0, 0.15)" }}
               transition={{ type: 'spring', stiffness: 300, damping: 20 }}
             >
-              <Link to={`/produto/${product.id}`} className={styles.imageWrapper}>
+              <Link to={`/produto/${product.id}`} state={{ from: '/favoritos' }} className={styles.imageWrapper}>
                 <motion.img
                   src={product.image_url || '/placeholder-product.jpg'}
                   alt={product.name}
@@ -159,7 +159,7 @@ export const Favorites = () => {
                 </div>
 
                 <div className={styles.footer}>
-                  <Link to={`/produto/${product.id}`} className={styles.detailsBtn}>
+                  <Link to={`/produto/${product.id}`} state={{ from: '/favoritos' }} className={styles.detailsBtn}>
                     Ver Detalhes
                   </Link>
                   <button

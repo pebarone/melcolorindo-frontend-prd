@@ -10,28 +10,30 @@ interface ProductFiltersProps {
   categories: CategoryInfo[];
   isLoadingCategories: boolean;
   selectedCategory: string | null;
-  selectedSubcategory: string | null;
+  selectedSubcategories: string[];
   sortBy: SortOption;
   onCategoryChange: (category: string | null) => void;
-  onSubcategoryChange: (subcategory: string | null) => void;
+  onSubcategoryToggle: (subcategory: string) => void;
   onSortChange: (sort: SortOption) => void;
   onClearFilters: () => void;
   hasActiveFilters: boolean;
   getTotalProductCount: () => number;
+  availableSubcategories: string[];
 }
 
 export function ProductFilters({
   categories,
   isLoadingCategories,
   selectedCategory,
-  selectedSubcategory,
+  selectedSubcategories,
   sortBy,
   onCategoryChange,
-  onSubcategoryChange,
+  onSubcategoryToggle,
   onSortChange,
   onClearFilters,
   hasActiveFilters,
   getTotalProductCount,
+  availableSubcategories,
 }: ProductFiltersProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [expandedSections, setExpandedSections] = useState({
@@ -42,7 +44,8 @@ export function ProductFilters({
 
   // Estado temporário para mobile
   const [tempCategory, setTempCategory] = useState<string | null>(selectedCategory);
-  const [tempSubcategory, setTempSubcategory] = useState<string | null>(selectedSubcategory);
+  // Mantemos como array no temp também
+  const [tempSubcategories, setTempSubcategories] = useState<string[]>(selectedSubcategories);
   const [tempSortBy, setTempSortBy] = useState<SortOption>(sortBy);
 
   /* Prevent body scroll when modal is open */
@@ -57,42 +60,70 @@ export function ProductFilters({
     };
   }, [isModalOpen]);
 
+  // Sincronizar temp state quando props mudam (se modal fechado)
+  useEffect(() => {
+    if (!isModalOpen) {
+      setTempCategory(selectedCategory);
+      setTempSubcategories(selectedSubcategories);
+      setTempSortBy(sortBy);
+    }
+  }, [selectedCategory, selectedSubcategories, sortBy, isModalOpen]);
+
   const toggleSection = (section: keyof typeof expandedSections) => {
     setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
   const openModal = useCallback(() => {
     setTempCategory(selectedCategory);
-    setTempSubcategory(selectedSubcategory);
+    setTempSubcategories(selectedSubcategories);
     setTempSortBy(sortBy);
     setIsModalOpen(true);
-  }, [selectedCategory, selectedSubcategory, sortBy]);
+  }, [selectedCategory, selectedSubcategories, sortBy]);
 
   const closeModal = useCallback(() => {
     setIsModalOpen(false);
   }, []);
 
   const applyMobileFilters = useCallback(() => {
-    onCategoryChange(tempCategory);
-    setTimeout(() => {
-      onSubcategoryChange(tempSubcategory);
+    // Aplicar categoria
+    if (tempCategory !== selectedCategory) {
+      onCategoryChange(tempCategory);
+    }
+    
+    // Aplicar sort
+    if (tempSortBy !== sortBy) {
       onSortChange(tempSortBy);
-    }, 0);
+    }
+
+    // Aplicar subcategorias (calculando diff ou apenas enviando novos clicks seria complexo com a prop toggle)
+    // Mas a prop é toggle. Se quisermos setar exato, o hook useProductFilters precisaria de 'setSubcategories'.
+    // Como só temos toggle, vamos comparar e fazer os toggles necessários?
+    // Não, o ideal é o parent expor um setSubcategories OU nós chamarmos toggle para cada diferença.
+    // Vamos assumir que para simplificar, no mobile, podemos chamar o toggle para cada item que mudou de estado.
+    // OU MELHOR: Vamos atualizar o hook useProductFilters para aceitar setar o array todo?
+    // User pediu "refactor". 
+    // Dado que toggle é o padrão, vamos inferir os toggles.
+    
+    const toAdd = tempSubcategories.filter(s => !selectedSubcategories.includes(s));
+    const toRemove = selectedSubcategories.filter(s => !tempSubcategories.includes(s));
+    
+    [...toAdd, ...toRemove].forEach(sub => onSubcategoryToggle(sub));
+
     closeModal();
-  }, [tempCategory, tempSubcategory, tempSortBy, onCategoryChange, onSubcategoryChange, onSortChange, closeModal]);
+  }, [tempCategory, selectedCategory, tempSortBy, sortBy, tempSubcategories, selectedSubcategories, onCategoryChange, onSortChange, onSubcategoryToggle, closeModal]);
 
-  // Subcategorias
-  const subcategories = selectedCategory 
-    ? categories.find(c => c.category === selectedCategory)?.subcategories || []
-    : [];
-
-  const tempSubcategories = tempCategory 
-    ? categories.find(c => c.category === tempCategory)?.subcategories || []
-    : [];
+  const toggleTempSubcategory = (sub: string) => {
+    setTempSubcategories(prev => {
+      if (prev.includes(sub)) {
+        return prev.filter(s => s !== sub);
+      }
+      return [...prev, sub];
+    });
+  };
 
   const activeFilterCount = [
     selectedCategory !== null,
-    selectedSubcategory !== null,
+    selectedSubcategories.length > 0,
     sortBy !== 'default',
   ].filter(Boolean).length;
 
@@ -121,11 +152,11 @@ export function ProductFilters({
                     {selectedCategory} <IconClose size={14} />
                   </button>
                 )}
-                {selectedSubcategory && (
-                  <button className={styles.filterChip} onClick={() => onSubcategoryChange(null)}>
-                    {selectedSubcategory} <IconClose size={14} />
+                {selectedSubcategories.map(sub => (
+                  <button key={sub} className={styles.filterChip} onClick={() => onSubcategoryToggle(sub)}>
+                    {sub} <IconClose size={14} />
                   </button>
-                )}
+                ))}
               </div>
             )}
 
@@ -164,7 +195,7 @@ export function ProductFilters({
             </div>
 
             {/* Subcategorias */}
-            {subcategories.length > 0 && (
+            {availableSubcategories.length > 0 && (
               <div className={styles.filterSection}>
                 <button
                   className={`${styles.filterHeader} ${expandedSections.subcategories ? styles.open : ''}`}
@@ -176,21 +207,21 @@ export function ProductFilters({
                 
                 {expandedSections.subcategories && (
                   <div className={styles.filterOptions}>
-                    <button className={styles.subcategoryOption} onClick={() => onSubcategoryChange(null)}>
-                      <span className={`${styles.checkbox} ${selectedSubcategory === null ? styles.checked : ''}`}>
-                        {selectedSubcategory === null && <IconCheck size={14} />}
-                      </span>
-                      <span className={styles.subcategoryName}>Todas</span>
-                    </button>
+                    {/* Opção "Todas" não faz sentido com multi-select aditivo, mas talvez para limpar? */}
+                    {/* Se nenhuma selecionada, mostra "Todas" como ativo implícito ou check vazio? */}
+                    {/* Vamos manter sem "Todas" explícito ou botão para limpar subcategorias */}
                     
-                    {subcategories.map((sub) => (
-                      <button key={sub} className={styles.subcategoryOption} onClick={() => onSubcategoryChange(sub)}>
-                        <span className={`${styles.checkbox} ${selectedSubcategory === sub ? styles.checked : ''}`}>
-                          {selectedSubcategory === sub && <IconCheck size={14} />}
-                        </span>
-                        <span className={styles.subcategoryName}>{sub}</span>
-                      </button>
-                    ))}
+                    {availableSubcategories.map((sub) => {
+                      const isSelected = selectedSubcategories.includes(sub);
+                      return (
+                        <button key={sub} className={styles.subcategoryOption} onClick={() => onSubcategoryToggle(sub)}>
+                          <span className={`${styles.checkbox} ${isSelected ? styles.checked : ''}`}>
+                            {isSelected && <IconCheck size={14} />}
+                          </span>
+                          <span className={styles.subcategoryName}>{sub}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -273,7 +304,7 @@ export function ProductFilters({
                     <div className={styles.modalOptions}>
                       <button
                         className={`${styles.categoryBtn} ${tempCategory === null ? styles.active : ''}`}
-                        onClick={() => { setTempCategory(null); setTempSubcategory(null); }}
+                        onClick={() => { setTempCategory(null); }}
                       >
                         Todos ({getTotalProductCount()})
                       </button>
@@ -281,7 +312,7 @@ export function ProductFilters({
                         <button
                           key={cat.category}
                           className={`${styles.categoryBtn} ${tempCategory === cat.category ? styles.active : ''}`}
-                          onClick={() => { setTempCategory(cat.category); setTempSubcategory(null); }}
+                          onClick={() => { setTempCategory(cat.category); }}
                         >
                           {cat.category} ({cat.productCount})
                         </button>
@@ -290,28 +321,33 @@ export function ProductFilters({
                   </div>
 
                   {/* Subcategorias */}
-                  {tempSubcategories.length > 0 && (
-                    <div className={styles.modalSection}>
-                      <div className={styles.modalSectionTitle}>Subcategorias</div>
-                      <div className={styles.modalOptions}>
-                        <button
-                          className={`${styles.subcategoryBtn} ${tempSubcategory === null ? styles.active : ''}`}
-                          onClick={() => setTempSubcategory(null)}
-                        >
-                          Todas
-                        </button>
-                        {tempSubcategories.map((sub) => (
-                          <button
-                            key={sub}
-                            className={`${styles.subcategoryBtn} ${tempSubcategory === sub ? styles.active : ''}`}
-                            onClick={() => setTempSubcategory(sub)}
-                          >
-                            {sub}
-                          </button>
-                        ))}
+                  {(() => {
+                    const modalSubcategories = tempCategory
+                      ? categories.find(c => c.category === tempCategory)?.subcategories || []
+                      : Array.from(new Set(categories.flatMap(c => c.subcategories))).sort();
+
+                    if (modalSubcategories.length === 0) return null;
+
+                    return (
+                      <div className={styles.modalSection}>
+                        <div className={styles.modalSectionTitle}>Subcategorias</div>
+                        <div className={styles.modalOptions}>
+                          {modalSubcategories.map((sub) => {
+                            const isSelected = tempSubcategories.includes(sub);
+                            return (
+                              <button
+                                key={sub}
+                                className={`${styles.subcategoryBtn} ${isSelected ? styles.active : ''}`}
+                                onClick={() => toggleTempSubcategory(sub)}
+                              >
+                                {sub}
+                              </button>
+                            );
+                          })}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    );
+                  })()}
 
                   {/* Ordenação */}
                   <div className={styles.modalSection}>

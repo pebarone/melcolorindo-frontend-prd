@@ -226,21 +226,30 @@ const ProductModal = ({ isOpen, product, onClose, onSave }: ProductModalProps) =
                         required
                       />
                     </div>
-                    {showCategoryDropdown && existingCategories.length > 0 && (
-                      <div className={styles.dropdown} style={{ top: '100%', zIndex: 10 }}>
-                        {existingCategories
-                          .filter(cat => cat.toLowerCase().includes(category.toLowerCase()))
-                          .map(cat => (
-                            <div
-                              key={cat}
-                              className={styles.dropdownItem}
-                              onMouseDown={() => setCategory(cat)}
-                            >
-                              {cat}
-                            </div>
-                          ))}
-                      </div>
-                    )}
+                    <AnimatePresence>
+                      {showCategoryDropdown && existingCategories.length > 0 && (
+                        <motion.div 
+                          className={styles.dropdown} 
+                          style={{ top: '100%', zIndex: 10 }}
+                          initial={{ opacity: 0, y: -8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -8 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          {existingCategories
+                            .filter(cat => cat.toLowerCase().includes(category.toLowerCase()))
+                            .map(cat => (
+                              <div
+                                key={cat}
+                                className={styles.dropdownItem}
+                                onMouseDown={() => setCategory(cat)}
+                              >
+                                {cat}
+                              </div>
+                            ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 </div>
 
@@ -258,21 +267,30 @@ const ProductModal = ({ isOpen, product, onClose, onSave }: ProductModalProps) =
                         placeholder="Selecione ou digite"
                       />
                     </div>
-                    {showSubcategoryDropdown && existingSubcategories.length > 0 && (
-                      <div className={styles.dropdown} style={{ top: '100%', zIndex: 10 }}>
-                        {existingSubcategories
-                          .filter(sub => sub.toLowerCase().includes(subcategory.toLowerCase()))
-                          .map(sub => (
-                            <div
-                              key={sub}
-                              className={styles.dropdownItem}
-                              onMouseDown={() => setSubcategory(sub)}
-                            >
-                              {sub}
-                            </div>
-                          ))}
-                      </div>
-                    )}
+                    <AnimatePresence>
+                      {showSubcategoryDropdown && existingSubcategories.length > 0 && (
+                        <motion.div 
+                          className={styles.dropdown} 
+                          style={{ top: '100%', zIndex: 10 }}
+                          initial={{ opacity: 0, y: -8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -8 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          {existingSubcategories
+                            .filter(sub => sub.toLowerCase().includes(subcategory.toLowerCase()))
+                            .map(sub => (
+                              <div
+                                key={sub}
+                                className={styles.dropdownItem}
+                                onMouseDown={() => setSubcategory(sub)}
+                              >
+                                {sub}
+                              </div>
+                            ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 </div>
 
@@ -622,15 +640,24 @@ const BulkProductModal = ({ isOpen, onClose, onSave }: BulkProductModalProps) =>
                                 />
                               </div>
                             </div>
-                            {activeDropdown?.index === index && activeDropdown.type === 'category' && existingCategories.length > 0 && (
-                              <div className={styles.dropdown} style={{ position: 'absolute', width: '100%', zIndex: 100 }}>
-                                {existingCategories.filter(c => c.toLowerCase().includes(draft.category.toLowerCase())).map(c => (
-                                  <div key={c} className={styles.dropdownItem} onMouseDown={() => updateDraft(draft.id, 'category', c)}>
-                                    {c}
-                                  </div>
-                                ))}
-                              </div>
-                            )}
+                            <AnimatePresence>
+                              {activeDropdown?.index === index && activeDropdown.type === 'category' && existingCategories.length > 0 && (
+                                <motion.div 
+                                  className={styles.dropdown} 
+                                  style={{ position: 'absolute', width: '100%', zIndex: 100 }}
+                                  initial={{ opacity: 0, y: -8 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  exit={{ opacity: 0, y: -8 }}
+                                  transition={{ duration: 0.2 }}
+                                >
+                                  {existingCategories.filter(c => c.toLowerCase().includes(draft.category.toLowerCase())).map(c => (
+                                    <div key={c} className={styles.dropdownItem} onMouseDown={() => updateDraft(draft.id, 'category', c)}>
+                                      {c}
+                                    </div>
+                                  ))}
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
                          </div>
 
                          {/* Subcategory */}
@@ -648,15 +675,24 @@ const BulkProductModal = ({ isOpen, onClose, onSave }: BulkProductModalProps) =>
                                 />
                               </div>
                             </div>
-                            {activeDropdown?.index === index && activeDropdown.type === 'subcategory' && existingSubcategories.length > 0 && (
-                              <div className={styles.dropdown} style={{ position: 'absolute', width: '100%', zIndex: 100 }}>
-                                {existingSubcategories.filter(s => s.toLowerCase().includes(draft.subcategory.toLowerCase())).map(s => (
-                                  <div key={s} className={styles.dropdownItem} onMouseDown={() => updateDraft(draft.id, 'subcategory', s)}>
-                                    {s}
-                                  </div>
-                                ))}
-                              </div>
-                            )}
+                            <AnimatePresence>
+                              {activeDropdown?.index === index && activeDropdown.type === 'subcategory' && existingSubcategories.length > 0 && (
+                                <motion.div 
+                                  className={styles.dropdown} 
+                                  style={{ position: 'absolute', width: '100%', zIndex: 100 }}
+                                  initial={{ opacity: 0, y: -8 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  exit={{ opacity: 0, y: -8 }}
+                                  transition={{ duration: 0.2 }}
+                                >
+                                  {existingSubcategories.filter(s => s.toLowerCase().includes(draft.subcategory.toLowerCase())).map(s => (
+                                    <div key={s} className={styles.dropdownItem} onMouseDown={() => updateDraft(draft.id, 'subcategory', s)}>
+                                      {s}
+                                    </div>
+                                  ))}
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
                          </div>
                       </div>
                     </div>
@@ -1225,44 +1261,52 @@ export const Admin = () => {
             </select>
         </div>
 
-        {selectedIds.size > 0 && (
-          <div className={styles.bulkActions}>
-            <span>{selectedIds.size} produtos selecionados</span>
-            <div style={{ display: 'flex', gap: '0.5rem', marginLeft: 'auto' }}>
-              <button
-                className={styles.bulkDeleteBtn}
-                style={{ background: '#6A4C93' }}
-                onClick={() => {
-                  const allSelected = displayedProducts.every(p => selectedIds.has(p.id));
-                  if (allSelected) {
-                    const newSelected = new Set(selectedIds);
-                    displayedProducts.forEach(p => newSelected.delete(p.id));
-                    setSelectedIds(newSelected);
-                  } else {
-                    const newSelected = new Set(selectedIds);
-                    displayedProducts.forEach(p => newSelected.add(p.id));
-                    setSelectedIds(newSelected);
-                  }
-                }}
-              >
-                <span style={{display:'inline-flex', marginRight: 6}}>
-                  <IconCheck size={16} color="white" />
-                </span>
-                {displayedProducts.length > 0 && displayedProducts.every(p => selectedIds.has(p.id)) ? 'Deselecionar' : 'Todos'}
-              </button>
+        <AnimatePresence>
+          {selectedIds.size > 0 && (
+            <motion.div 
+              className={styles.bulkActions}
+              initial={{ opacity: 0, y: -20, height: 0 }}
+              animate={{ opacity: 1, y: 0, height: 'auto' }}
+              exit={{ opacity: 0, y: -20, height: 0 }}
+              transition={{ duration: 0.3, ease: 'easeOut' }}
+            >
+              <span>{selectedIds.size} produtos selecionados</span>
+              <div style={{ display: 'flex', gap: '0.5rem', marginLeft: 'auto' }}>
+                <button
+                  className={styles.bulkDeleteBtn}
+                  style={{ background: '#6A4C93' }}
+                  onClick={() => {
+                    const allSelected = displayedProducts.every(p => selectedIds.has(p.id));
+                    if (allSelected) {
+                      const newSelected = new Set(selectedIds);
+                      displayedProducts.forEach(p => newSelected.delete(p.id));
+                      setSelectedIds(newSelected);
+                    } else {
+                      const newSelected = new Set(selectedIds);
+                      displayedProducts.forEach(p => newSelected.add(p.id));
+                      setSelectedIds(newSelected);
+                    }
+                  }}
+                >
+                  <span style={{display:'inline-flex', marginRight: 6}}>
+                    <IconCheck size={16} color="white" />
+                  </span>
+                  {displayedProducts.length > 0 && displayedProducts.every(p => selectedIds.has(p.id)) ? 'Deselecionar' : 'Todos'}
+                </button>
 
-              <button 
-                className={styles.bulkDeleteBtn}
-                onClick={() => setIsBulkDeleteModalOpen(true)}
-              >
-                <span style={{display:'inline-flex', marginRight: 6}}>
-                  <IconDelete size={16} color="white" />
-                </span>
-                Excluir
-              </button>
-            </div>
-          </div>
-        )}
+                <button 
+                  className={styles.bulkDeleteBtn}
+                  onClick={() => setIsBulkDeleteModalOpen(true)}
+                >
+                  <span style={{display:'inline-flex', marginRight: 6}}>
+                    <IconDelete size={16} color="white" />
+                  </span>
+                  Excluir
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {isLoading ? (
           <div className={styles.loading}>

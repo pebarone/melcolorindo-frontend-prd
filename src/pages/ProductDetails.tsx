@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { productsApi, favoritesApi } from '../services/api';
 import type { Product } from '../services/api';
@@ -10,6 +10,9 @@ import styles from './ProductDetails.module.css';
 
 export const ProductDetails = () => {
   const { id } = useParams<{ id: string }>();
+  const location = useLocation();
+  const backPath = location.state?.from === '/favoritos' ? '/favoritos' : '/produtos';
+  const backText = location.state?.from === '/favoritos' ? 'Voltar para favoritos' : 'Voltar para produtos';
   const { isAuthenticated, isAdmin } = useAuth();
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -111,9 +114,9 @@ export const ProductDetails = () => {
         <div className={styles.notFound}>
           <h2>Produto não encontrado</h2>
           <p>O produto que você procura não existe ou foi removido.</p>
-          <Link to="/produtos" className={styles.backButton}>
+          <Link to={backPath} className={styles.backButton}>
             <IconArrowLeft size={20} />
-            Ver todos os produtos
+            {backText === 'Voltar para favoritos' ? 'Voltar para favoritos' : 'Ver todos os produtos'}
           </Link>
         </div>
       </div>
@@ -122,9 +125,9 @@ export const ProductDetails = () => {
 
   return (
     <div className={styles.container}>
-      <Link to="/produtos" className={styles.backLink}>
+      <Link to={backPath} className={styles.backLink}>
         <IconArrowLeft size={20} />
-        Voltar para produtos
+        {backText}
       </Link>
 
       <motion.div
