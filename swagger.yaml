@@ -541,6 +541,66 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
+  /products/categories:
+    get:
+      tags:
+        - Produtos
+      summary: Listar categorias disponíveis
+      description: |
+        Retorna todas as categorias únicas com suas subcategorias e contagem de produtos.
+
+        **Este endpoint é otimizado para o frontend:**
+        - Em vez de carregar todos os produtos para extrair categorias, use este endpoint
+        - Inclui subcategorias e contagem de produtos por categoria
+        - Resposta é cacheada por 5 minutos para melhor performance
+
+        **Exemplo de uso:**
+        ```javascript
+        const response = await fetch('/products/categories');
+        const categories = await response.json();
+        // [{ category: "Chaveiros", subcategories: ["Disney", "Marvel"], productCount: 45 }, ...]
+        ```
+      responses:
+        "200":
+          description: Lista de categorias retornada com sucesso
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    category:
+                      type: string
+                      description: Nome da categoria
+                      example: "Chaveiros"
+                    subcategories:
+                      type: array
+                      items:
+                        type: string
+                      description: Lista de subcategorias dentro desta categoria
+                      example: ["Disney", "Marvel", "DC Comics"]
+                    productCount:
+                      type: integer
+                      description: Total de produtos nesta categoria
+                      example: 45
+              example:
+                - category: "Chaveiros"
+                  subcategories: ["Disney", "Marvel"]
+                  productCount: 45
+                - category: "Canecas"
+                  subcategories: ["Personalizadas"]
+                  productCount: 23
+                - category: "Camisetas"
+                  subcategories: []
+                  productCount: 12
+        "500":
+          description: Erro interno do servidor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
   /products/{id}:
     get:
       tags:
@@ -1357,3 +1417,5 @@ tags:
     description: Gerenciamento de usuários (apenas admins)
   - name: Favoritos
     description: Gerenciamento de produtos favoritos do usuário
+  - name: Categorias
+    description: Gerenciamento de categorias de produtos

@@ -139,8 +139,16 @@ let refreshPromise: Promise<string | null> | null = null;
 // Callback para notificar sobre logout forçado (será setado pelo AuthContext)
 let onForceLogout: (() => void) | null = null;
 
+// Callback para notificar sobre renovação do token (será setado pelo AuthContext)
+let onTokenRefreshed: ((newAccessToken: string) => void) | null = null;
+
 export const setForceLogoutCallback = (callback: () => void): void => {
   onForceLogout = callback;
+};
+
+// NOVO: Permite ao AuthContext receber notificação quando o token é renovado
+export const setTokenRefreshedCallback = (callback: (newAccessToken: string) => void): void => {
+  onTokenRefreshed = callback;
 };
 
 /**
@@ -186,6 +194,12 @@ async function tryRefreshToken(): Promise<string | null> {
     }
     
     updateAccessToken(data.accessToken);
+    
+    // NOVO: Notificar AuthContext sobre renovação para atualizar isAdmin
+    if (onTokenRefreshed) {
+      onTokenRefreshed(data.accessToken);
+    }
+    
     console.log('[Auth] Token renovado com sucesso');
     return data.accessToken;
   } catch (error) {
@@ -361,6 +375,12 @@ export interface ProductsQueryParams {
   subcategory?: string;
 }
 
+export interface CategoryInfo {
+  category: string;
+  subcategories: string[];
+  productCount: number;
+}
+
 export const productsApi = {
   /**
    * Lista produtos com paginação e filtros
@@ -402,6 +422,14 @@ export const productsApi = {
   getFeatured: async (useCache = true): Promise<Product[]> => {
     const data = await fetchApi<Product[]>('/products/featured', {}, useCache);
     return data.map(normalizeProduct);
+  },
+
+  /**
+   * Lista categorias com subcategorias e contagem de produtos
+   * @param useCache - Se deve usar cache (padrão: true, TTL: 5 min)
+   */
+  getCategories: async (useCache = true): Promise<CategoryInfo[]> => {
+    return fetchApi<CategoryInfo[]>('/products/categories', {}, useCache);
   },
 
   /**

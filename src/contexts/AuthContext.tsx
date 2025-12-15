@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import type { ReactNode } from 'react';
-import { authApi, ApiError, setForceLogoutCallback, clearTokens } from '../services/api';
+import { authApi, ApiError, setForceLogoutCallback, setTokenRefreshedCallback, clearTokens } from '../services/api';
 import type { User } from '../services/api';
 
 // Tipos
@@ -115,6 +115,26 @@ export function AuthProvider({ children }: AuthProviderProps) {
     });
   }, [performLogout]);
 
+  // NOVO: Registrar callback para atualizar isAdmin quando token for renovado
+  // Isso é importante porque quando o token expira, isAdmin é false por segurança
+  // Quando o token é renovado automaticamente, precisamos atualizar isAdmin corretamente
+  useEffect(() => {
+    setTokenRefreshedCallback((newAccessToken: string) => {
+      console.log('[Auth] Token renovado - atualizando status de admin');
+      
+      const payload = decodeJwtPayload(newAccessToken);
+      if (payload) {
+        const hasAdminRole = 
+          payload?.is_admin === true || 
+          payload?.role === 'admin' ||
+          (payload?.roles as string[])?.includes('admin');
+        
+        setIsAdmin(!!hasAdminRole);
+        console.log('[Auth] isAdmin atualizado para:', !!hasAdminRole);
+      }
+    });
+  }, []);
+
   // Carregar dados do localStorage na inicialização
   useEffect(() => {
     const loadStoredAuth = () => {
@@ -129,28 +149,34 @@ export function AuthProvider({ children }: AuthProviderProps) {
             const parsedUser = JSON.parse(storedUser);
             setUser(parsedUser);
             
-            // Decodificar token para verificar se é admin
+            // SEGURANÇA: Sempre verificar admin APENAS através do JWT, nunca confiar no localStorage
+            // Isso previne que um usuário mal-intencionado altere o role no localStorage
             const payload = decodeJwtPayload(storedAccessToken);
             
-            const hasAdminRole = 
-              payload?.is_admin === true || 
-              parsedUser.role === 'admin' ||
-              payload?.role === 'admin' ||
-              (payload?.roles as string[])?.includes('admin');
+            // Verificar se o token é válido e tem as claims esperadas
+            if (payload) {
+              const hasAdminRole = 
+                payload?.is_admin === true || 
+                payload?.role === 'admin' ||
+                (payload?.roles as string[])?.includes('admin');
 
-            setIsAdmin(!!hasAdminRole);
+              setIsAdmin(!!hasAdminRole);
+            } else {
+              // Token inválido, não dar acesso admin
+              setIsAdmin(false);
+            }
           } else if (storedRefreshToken) {
             // Access token expirado, mas temos refresh token
             // O token será renovado automaticamente na próxima requisição
-            // Por ora, manter o usuário como logado
+            // SEGURANÇA: NÃO dar acesso admin até o token ser renovado e verificado
             const parsedUser = JSON.parse(storedUser);
             setUser(parsedUser);
             
-            // Verificar role do usuário salvo
-            const hasAdminRole = parsedUser.role === 'admin';
-            setIsAdmin(!!hasAdminRole);
+            // IMPORTANTE: isAdmin fica FALSE até o token ser renovado
+            // Isso previne ataques de manipulação do localStorage
+            setIsAdmin(false);
             
-            console.log('[Auth] Access token expirado, será renovado na próxima requisição');
+            console.log('[Auth] Access token expirado, isAdmin desabilitado até renovação do token');
           } else {
             // Sem refresh token, limpar dados
             clearTokens();

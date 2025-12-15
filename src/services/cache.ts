@@ -9,6 +9,7 @@ interface CacheConfig {
   products: number;
   productList: number;
   featuredProducts: number;
+  categories: number;
   favorites: number;
   favoritesCount: number;
   usersList: number;
@@ -20,6 +21,7 @@ const DEFAULT_TTL: CacheConfig = {
   products: 30,         // 30 minutos para produto individual (produtos raramente mudam)
   productList: 30,      // 30 minutos para lista de produtos
   featuredProducts: 30, // 30 minutos para destaques (configuração estável)
+  categories: 5,        // 5 minutos para categorias (conforme cache do backend)
   favorites: 5,         // 5 minutos para favoritos (contexto global gerencia)
   favoritesCount: 5,    // 5 minutos para contagem
   usersList: 10,        // 10 minutos para lista de usuários (admin only)
@@ -54,6 +56,9 @@ class CacheService {
   private getTTL(key: string): number {
     if (key.includes('/products/featured')) {
       return this.ttlConfig.featuredProducts * 60 * 1000;
+    }
+    if (key.includes('/products/categories')) {
+      return this.ttlConfig.categories * 60 * 1000;
     }
     if (key.includes('/products/') && !key.includes('?')) {
       return this.ttlConfig.products * 60 * 1000;
