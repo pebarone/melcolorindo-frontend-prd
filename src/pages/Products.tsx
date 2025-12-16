@@ -8,6 +8,7 @@ import { useFavorites } from '../contexts/FavoritesContext';
 import { ProductCard } from '../components/ProductCard';
 import { ProductFilters } from '../components/ProductFilters';
 import { useProductFilters } from '../hooks/useProductFilters';
+import { useMobileAnimations } from '../hooks/useMobileAnimations';
 import { useToast } from '../hooks/useToast';
 import { ToastContainer } from '../components/Toast';
 
@@ -37,6 +38,9 @@ export const Products = () => {
     getTotalProductCount,
     getAvailableSubcategories,
   } = useProductFilters();
+  
+  // Animações otimizadas para mobile
+  const { skeletonTransition } = useMobileAnimations();
   
   // Paginação
   const [totalProducts, setTotalProducts] = useState(0);
@@ -212,24 +216,24 @@ export const Products = () => {
                 <div key={i} className={styles.cardSkeleton}>
                   <motion.div 
                     className={styles.skeletonImage}
-                    animate={{ opacity: [0.5, 1, 0.5] }}
-                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                    animate={{ opacity: [0.4, 0.8, 0.4] }}
+                    transition={skeletonTransition}
                   ></motion.div>
                   <div className={styles.skeletonContent}>
                     <motion.div 
                       className={styles.skeletonBadge}
-                      animate={{ opacity: [0.5, 1, 0.5] }}
-                      transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.1 }}
+                      animate={{ opacity: [0.4, 0.8, 0.4] }}
+                      transition={{ ...skeletonTransition, delay: 0.1 }}
                     ></motion.div>
                     <motion.div 
                       className={styles.skeletonTitle}
-                      animate={{ opacity: [0.5, 1, 0.5] }}
-                      transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.2 }}
+                      animate={{ opacity: [0.4, 0.8, 0.4] }}
+                      transition={{ ...skeletonTransition, delay: 0.2 }}
                     ></motion.div>
                     <motion.div 
                       className={styles.skeletonPrice}
-                      animate={{ opacity: [0.5, 1, 0.5] }}
-                      transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.3 }}
+                      animate={{ opacity: [0.4, 0.8, 0.4] }}
+                      transition={{ ...skeletonTransition, delay: 0.3 }}
                     ></motion.div>
                   </div>
                 </div>

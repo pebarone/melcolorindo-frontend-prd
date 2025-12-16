@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { IconFilter, IconClose, IconCheck, IconChevronDown } from './Icons';
+import { useMobileAnimations } from '../hooks/useMobileAnimations';
 import type { CategoryInfo } from '../services/api';
 import type { SortOption } from '../hooks/useProductFilters';
 import styles from './ProductFilters.module.css';
@@ -47,6 +48,9 @@ export function ProductFilters({
   // Mantemos como array no temp também
   const [tempSubcategories, setTempSubcategories] = useState<string[]>(selectedSubcategories);
   const [tempSortBy, setTempSortBy] = useState<SortOption>(sortBy);
+  
+  // Animações otimizadas para mobile
+  const { spring, overlayTransition, overlayVariants, bottomSheetVariants } = useMobileAnimations();
 
   /* Prevent body scroll when modal is open */
   useEffect(() => {
@@ -277,17 +281,20 @@ export function ProductFilters({
           {isModalOpen && (
             <motion.div
               className={styles.modalOverlay}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              variants={overlayVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              transition={overlayTransition}
               onClick={closeModal}
             >
               <motion.div
                 className={styles.modalContent}
-                initial={{ y: '100%' }}
-                animate={{ y: 0 }}
-                exit={{ y: '100%' }}
-                transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                variants={bottomSheetVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                transition={spring}
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className={styles.modalHeader}>

@@ -5,6 +5,7 @@ import { IconHeart, IconWhatsapp } from './Icons';
 import type { Product } from '../services/api';
 import { getSubcategoryColor } from '../utils/subcategoryColors';
 import { usePrefersReducedMotion } from '../hooks/useIsMobile';
+import { useMobileAnimations } from '../hooks/useMobileAnimations';
 import styles from '../pages/Products.module.css';
 
 interface ProductCardProps {
@@ -20,6 +21,7 @@ interface ProductCardProps {
  */
 export const ProductCard = memo(({ product, isFavorite, onFavoriteToggle }: ProductCardProps) => {
   const prefersReducedMotion = usePrefersReducedMotion();
+  const { shouldUseLayout } = useMobileAnimations();
   const navigate = useNavigate();
   
   const handleCardClick = useCallback(() => {
@@ -50,19 +52,20 @@ export const ProductCard = memo(({ product, isFavorite, onFavoriteToggle }: Prod
 
   // Animações otimizadas para performance
   // Usa apenas propriedades GPU-accelerated (transform, opacity)
+  // Desativa layout animations em mobile para evitar reflows pesados
   const motionProps = useMemo(() => ({
     initial: prefersReducedMotion ? { opacity: 1 } : { opacity: 0, scale: 0.9 },
     animate: { opacity: 1, scale: 1 },
     exit: prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.9 },
     whileHover: prefersReducedMotion ? undefined : { y: -8, transition: { duration: 0.2 } },
     whileTap: prefersReducedMotion ? undefined : { scale: 0.98 },
-    layout: true,
+    layout: shouldUseLayout, // Desativado em mobile
     transition: { 
       layout: { duration: 0.3 },
       opacity: { duration: 0.2 },
       scale: { duration: 0.2 }
     }
-  }), [prefersReducedMotion]);
+  }), [prefersReducedMotion, shouldUseLayout]);
 
   const imageVariants = {
     hover: { scale: 1.1, transition: { duration: 0.4, ease: "easeOut" as const } }

@@ -6,14 +6,42 @@ import styles from './Home.module.css';
 import { productsApi } from '../services/api';
 import type { Product } from '../services/api';
 import { getSubcategoryColor } from '../utils/subcategoryColors';
+import { useMobileAnimations } from '../hooks/useMobileAnimations';
 
 const MotionLink = motion.create(Link);
 
 export const Home = () => {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [currentSlide, setCurrentSlide] = useState(0);
   const [itemsPerSlide, setItemsPerSlide] = useState(3); // Desktop: 3, Mobile: 1
+  const [[page, direction], setPage] = useState([0, 0]); // [currentSlide, direction]
+  
+  // Helper para pre-carregar imagens
+  const preloadImages = async (products: Product[]) => {
+    const promises = products.map((product) => {
+      return new Promise((resolve) => {
+        if (!product.image_url) {
+          resolve(true); 
+          return;
+        }
+        const img = new Image();
+        img.src = product.image_url;
+        img.onload = () => resolve(true);
+        img.onerror = () => resolve(true); // Resolve mesmo com erro para não travar
+      });
+    });
+    return Promise.all(promises);
+  };
+
+  // Atualizar slide com direção (para swipe)
+  const paginate = (newDirection: number) => {
+    const maxSlides = Math.ceil(featuredProducts.length / itemsPerSlide);
+    const nextSlide = (page + newDirection + maxSlides) % maxSlides;
+    setPage([nextSlide, newDirection]);
+  };
+  
+  // Animações otimizadas para mobile
+  const { skeletonTransition, prefersReducedMotion, isMobile } = useMobileAnimations();
 
   // Detectar tamanho da tela para responsividade com debounce
   useEffect(() => {
@@ -42,6 +70,10 @@ export const Home = () => {
       try {
         // Usar novo endpoint de produtos em destaque (máximo 6)
         const products = await productsApi.getFeatured();
+        // Pré-carregar imagens antes de mostrar
+        if (products.length > 0) {
+          await preloadImages(products);
+        }
         setFeaturedProducts(products);
       } catch (error) {
         console.error('Erro ao carregar produtos em destaque:', error);
@@ -59,21 +91,41 @@ export const Home = () => {
     if (featuredProducts.length <= itemsPerSlide) return; // Não precisa de carousel
 
     const interval = setInterval(() => {
-      setCurrentSlide((prev) => {
-        const maxSlides = Math.ceil(featuredProducts.length / itemsPerSlide);
-        return (prev + 1) % maxSlides;
-      });
+        paginate(1);
     }, 5000); // Muda a cada 5 segundos
 
     return () => clearInterval(interval);
-  }, [featuredProducts.length, itemsPerSlide, currentSlide]);
+  }, [featuredProducts.length, itemsPerSlide, page]); // page depende de currentSlide
 
   const maxSlides = Math.ceil(featuredProducts.length / itemsPerSlide);
 
   const getCurrentProducts = () => {
-    const start = currentSlide * itemsPerSlide;
+    const start = page * itemsPerSlide;
     const end = start + itemsPerSlide;
     return featuredProducts.slice(start, end);
+  };
+  
+  // Variantes para slide direcional
+  const slideVariants = {
+    enter: (direction: number) => ({
+      x: direction > 0 ? 300 : -300,
+      opacity: 0
+    }),
+    center: {
+      zIndex: 1,
+      x: 0,
+      opacity: 1
+    },
+    exit: (direction: number) => ({
+      zIndex: 0,
+      x: direction < 0 ? 300 : -300,
+      opacity: 0
+    })
+  };
+
+  const swipeConfidenceThreshold = 10000;
+  const swipePower = (offset: number, velocity: number) => {
+    return Math.abs(offset) * velocity;
   };
 
   return (
@@ -120,39 +172,30 @@ export const Home = () => {
         <div className={styles.heroVisual}>
            <motion.div 
              className={styles.blob1}
-             animate={{ 
-               transform: [
-                 "translate3d(0, 0, 0) rotate(0deg)",
-                 "translate3d(30px, -30px, 0) rotate(10deg)",
-                 "translate3d(-20px, 20px, 0) rotate(-5deg)",
-                 "translate3d(0, 0, 0) rotate(0deg)"
-               ]
+             animate={prefersReducedMotion ? {} : { 
+               x: [0, 30, -20, 0],
+               y: [0, -30, 20, 0],
+               rotate: [0, 10, -5, 0]
              }}
-             transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+             transition={{ duration: isMobile ? 15 : 10, repeat: Infinity, ease: "linear" }}
            />
            <motion.div 
              className={styles.blob2}
-             animate={{ 
-               transform: [
-                 "translate3d(0, 0, 0) rotate(0deg)",
-                 "translate3d(30px, -30px, 0) rotate(10deg)",
-                 "translate3d(-20px, 20px, 0) rotate(-5deg)",
-                 "translate3d(0, 0, 0) rotate(0deg)"
-               ]
+             animate={prefersReducedMotion ? {} : { 
+               x: [0, 30, -20, 0],
+               y: [0, -30, 20, 0],
+               rotate: [0, 10, -5, 0]
              }}
-             transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+             transition={{ duration: isMobile ? 15 : 10, repeat: Infinity, ease: "linear", delay: 2 }}
            />
            <motion.div 
              className={styles.blob3}
-             animate={{ 
-               transform: [
-                 "translate3d(0, 0, 0) rotate(0deg)",
-                 "translate3d(30px, -30px, 0) rotate(10deg)",
-                 "translate3d(-20px, 20px, 0) rotate(-5deg)",
-                 "translate3d(0, 0, 0) rotate(0deg)"
-               ]
+             animate={prefersReducedMotion ? {} : { 
+               x: [0, 30, -20, 0],
+               y: [0, -30, 20, 0],
+               rotate: [0, 10, -5, 0]
              }}
-             transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 4 }}
+             transition={{ duration: isMobile ? 15 : 10, repeat: Infinity, ease: "linear", delay: 4 }}
            />
            <motion.img 
              src={"/produto3.jpg"} 
@@ -180,19 +223,19 @@ export const Home = () => {
               <div key={i} className={styles.cardSkeleton}>
                 <motion.div 
                   className={styles.skeletonImage}
-                  animate={{ opacity: [0.5, 1, 0.5] }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                  animate={{ opacity: [0.4, 0.8, 0.4] }}
+                  transition={skeletonTransition}
                 />
                 <div className={styles.skeletonContent}>
                   <motion.div 
                     className={styles.skeletonTitle}
-                    animate={{ opacity: [0.5, 1, 0.5] }}
-                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.1 }}
+                    animate={{ opacity: [0.4, 0.8, 0.4] }}
+                    transition={{ ...skeletonTransition, delay: 0.1 }}
                   />
                   <motion.div 
                     className={styles.skeletonPrice}
-                    animate={{ opacity: [0.5, 1, 0.5] }}
-                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.2 }}
+                    animate={{ opacity: [0.4, 0.8, 0.4] }}
+                    transition={{ ...skeletonTransition, delay: 0.2 }}
                   />
                 </div>
               </div>
@@ -201,15 +244,34 @@ export const Home = () => {
         ) : featuredProducts.length > 0 ? (
           <div className={styles.carouselContainer}>
             {/* Grid responsivo com produtos */}
-            {/* Grid responsivo com produtos */}
-            <AnimatePresence mode="wait">
+            <AnimatePresence initial={false} custom={direction} mode="wait">
               <motion.div
-                key={currentSlide}
+                key={page}
                 className={styles.grid}
-                initial={{ opacity: 0, x: 50 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -50 }}
-                transition={{ duration: 0.5, ease: "easeInOut" }}
+                custom={direction}
+                variants={slideVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{
+                  x: { type: "spring", stiffness: 300, damping: 30 },
+                  opacity: { duration: 0.2 }
+                }}
+                drag={isMobile ? "x" : false} // Swipe apenas em mobile ou sempre
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={1}
+                onDragEnd={(_, { offset, velocity }) => {
+                  const swipe = swipePower(offset.x, velocity.x);
+
+                  // Swipe left -> next
+                  if (swipe < -swipeConfidenceThreshold) {
+                    paginate(1);
+                  } 
+                  // Swipe right -> prev
+                  else if (swipe > swipeConfidenceThreshold) {
+                    paginate(-1);
+                  }
+                }}
               >
                 {getCurrentProducts().map((product) => (
                   <Link to={`/produto/${product.id}`} key={product.id} className={styles.cardLink}>
@@ -219,13 +281,15 @@ export const Home = () => {
                       variants={{
                         hover: { y: -10, boxShadow: "0 20px 40px rgba(0,0,0,0.1)" }
                       }}
+                      // No drag no card individual para não conflitar
+                      drag={false} 
                     >
                       <div className={styles.cardImageWrapper}>
                         <motion.img 
                           src={product.image_url || '/placeholder.jpg'} 
                           alt={product.name} 
                           className={styles.cardImage}
-                          loading="lazy"
+                          // loading="lazy" -> Removido pois já fizemos preload
                           decoding="async"
                           variants={{
                             hover: { scale: 1.1 }
@@ -260,13 +324,16 @@ export const Home = () => {
                 {Array.from({ length: maxSlides }).map((_, index) => (
                   <motion.button
                     key={index}
-                    className={`${styles.indicator} ${currentSlide === index ? styles.active : ''}`}
-                    onClick={() => setCurrentSlide(index)}
+                    className={`${styles.indicator} ${page === index ? styles.active : ''}`}
+                    onClick={() => {
+                        const newDirection = index > page ? 1 : -1;
+                        setPage([index, newDirection]);
+                    }}
                     aria-label={`Ir para slide ${index + 1}`}
                     whileHover={{ scale: 1.2, backgroundColor: "#aaa" }}
                     animate={{ 
-                      width: currentSlide === index ? 30 : 12,
-                      backgroundColor: currentSlide === index ? "#1982C4" : "#ddd"
+                      width: page === index ? 30 : 12,
+                      backgroundColor: page === index ? "#1982C4" : "#ddd"
                     }}
                   />
                 ))}

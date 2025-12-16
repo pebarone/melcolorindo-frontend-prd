@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { IconMail, IconKey, IconEye, IconEyeOff, IconAlertCircle, IconUserPlus } from './Icons';
 import { useAuth } from '../contexts/AuthContext';
 import { isValidEmail } from '../services/api';
+import { useMobileAnimations } from '../hooks/useMobileAnimations';
 import styles from './LoginModal.module.css'; // Reusa os estilos do LoginModal
 
 interface RegisterModalProps {
@@ -23,6 +24,7 @@ export const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }: RegisterModa
   const [touched, setTouched] = useState({ email: false, password: false, confirmPassword: false });
   
   const { register, error, clearError } = useAuth();
+  const { spring, overlayTransition, modalVariants, overlayVariants } = useMobileAnimations();
 
   // Limpar formulário quando modal fechar
   useEffect(() => {
@@ -126,18 +128,20 @@ export const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }: RegisterModa
       {isOpen && (
         <motion.div
           className={styles.overlay}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
+          variants={overlayVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+          transition={overlayTransition}
           onClick={handleOverlayClick}
         >
           <motion.div
             className={styles.modal}
-            initial={{ scale: 0.95, opacity: 0, y: 20 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.95, opacity: 0, y: 20 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            variants={modalVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            transition={spring}
           >
             <button
               className={styles.closeBtn}

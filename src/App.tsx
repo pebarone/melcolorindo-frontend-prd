@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { lazy, Suspense, useEffect } from 'react';
+import { MotionConfig } from 'motion/react';
 import { Layout } from './components/Layout';
 import { AuthProvider } from './contexts/AuthContext';
 import { FavoritesProvider } from './contexts/FavoritesContext';
@@ -84,27 +85,29 @@ const TitleUpdater = () => {
 
 function App() {
   return (
-    <AuthProvider>
-      <FavoritesProvider>
-        <BrowserRouter>
-          <ScrollToTop />
-          <TitleUpdater />
-          <Suspense fallback={<PageLoader />}>
-            <Routes>
-              <Route path="/" element={<Layout />}>
-                <Route index element={<Home />} />
-                <Route path="produtos" element={<Products />} />
-                <Route path="produto/:id" element={<ProductDetails />} />
-                <Route path="favoritos" element={<Favorites />} />
-                <Route path="sobre" element={<About />} />
-                <Route path="contato" element={<Contact />} />
-                <Route path="admin" element={<Admin />} />
-              </Route>
-            </Routes>
-          </Suspense>
-        </BrowserRouter>
-      </FavoritesProvider>
-    </AuthProvider>
+    <MotionConfig reducedMotion="user">
+      <AuthProvider>
+        <FavoritesProvider>
+          <BrowserRouter>
+            <ScrollToTop />
+            <TitleUpdater />
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                <Route path="/" element={<Layout />}>
+                  <Route index element={<Home />} />
+                  <Route path="produtos" element={<Products />} />
+                  <Route path="produto/:id" element={<ProductDetails />} />
+                  <Route path="favoritos" element={<Favorites />} />
+                  <Route path="sobre" element={<About />} />
+                  <Route path="contato" element={<Contact />} />
+                  <Route path="admin" element={<Admin />} />
+                </Route>
+              </Routes>
+            </Suspense>
+          </BrowserRouter>
+        </FavoritesProvider>
+      </AuthProvider>
+    </MotionConfig>
   );
 }
 

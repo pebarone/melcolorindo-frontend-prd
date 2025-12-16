@@ -22,6 +22,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 import { ToastContainer } from '../components/Toast';
 import { useToast } from '../hooks/useToast';
+import { useMobileAnimations } from '../hooks/useMobileAnimations';
 import { getSubcategoryColor } from '../utils/subcategoryColors';
 import styles from './Admin.module.css';
 import modalStyles from '../components/LoginModal.module.css';
@@ -46,6 +47,8 @@ const ProductModal = ({ isOpen, product, onClose, onSave }: ProductModalProps) =
   const [existingSubcategories, setExistingSubcategories] = useState<string[]>([]);
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [showSubcategoryDropdown, setShowSubcategoryDropdown] = useState(false);
+  
+  const { spring, overlayTransition, modalVariants, overlayVariants } = useMobileAnimations();
 
   useEffect(() => {
     if (product) {
@@ -150,18 +153,20 @@ const ProductModal = ({ isOpen, product, onClose, onSave }: ProductModalProps) =
       {isOpen && (
         <motion.div
           className={modalStyles.overlay}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
+          variants={overlayVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+          transition={overlayTransition}
           onClick={(e) => e.target === e.currentTarget && onClose()}
         >
           <motion.div
             className={modalStyles.modal}
-            initial={{ scale: 0.95, opacity: 0, y: 20 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.95, opacity: 0, y: 20 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            variants={modalVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            transition={spring}
           >
             <button
               className={modalStyles.closeBtn}
@@ -380,6 +385,8 @@ interface ConfirmDeleteProps {
 }
 
 const ConfirmDeleteModal = ({ isOpen, productName, onClose, onConfirm, isDeleting }: ConfirmDeleteProps) => {
+  const { spring, overlayTransition, modalVariants, overlayVariants } = useMobileAnimations();
+  
   // Prevenir scroll do body quando modal aberto
   useEffect(() => {
     if (isOpen) {
@@ -397,17 +404,19 @@ const ConfirmDeleteModal = ({ isOpen, productName, onClose, onConfirm, isDeletin
       {isOpen && (
         <motion.div
           className={styles.modalOverlay}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
+          variants={overlayVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+          transition={overlayTransition}
         >
           <motion.div
             className={styles.confirmModal}
-            initial={{ scale: 0.95, opacity: 0, y: 20 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.95, opacity: 0, y: 20 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            variants={modalVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            transition={spring}
           >
             <IconAlert size={48} color="#FF595E" />
             <h3>Excluir Produto</h3>
@@ -449,6 +458,8 @@ const BulkProductModal = ({ isOpen, onClose, onSave }: BulkProductModalProps) =>
   const [existingCategories, setExistingCategories] = useState<string[]>([]);
   const [existingSubcategories, setExistingSubcategories] = useState<string[]>([]);
   const [activeDropdown, setActiveDropdown] = useState<{index: number, type: 'category' | 'subcategory'} | null>(null);
+  
+  const { spring, overlayTransition, modalVariants, overlayVariants } = useMobileAnimations();
 
   // Carregar categorias e subcategorias existentes
   useEffect(() => {
@@ -549,17 +560,20 @@ const BulkProductModal = ({ isOpen, onClose, onSave }: BulkProductModalProps) =>
       {isOpen && (
         <motion.div
           className={modalStyles.overlay}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
+          variants={overlayVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+          transition={overlayTransition}
         >
           <motion.div
             className={modalStyles.modal}
             style={{ maxWidth: '900px', width: '95%', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}
-            initial={{ scale: 0.95, opacity: 0, y: 20 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.95, opacity: 0, y: 20 }}
+            variants={modalVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            transition={spring}
           >
             <button className={modalStyles.closeBtn} onClick={onClose}>
               <img src="/closeicon.svg" alt="Fechar" width={24} height={24} />
@@ -780,6 +794,8 @@ interface MobileActionModalProps {
 }
 
 const MobileActionModal = ({ isOpen, product, onClose, onEdit, onDelete, onToggleFeatured }: MobileActionModalProps) => {
+  const { spring, overlayTransition, overlayVariants, bottomSheetVariants } = useMobileAnimations();
+  
   useEffect(() => {
     if (isOpen) document.body.style.overflow = 'hidden';
     else document.body.style.overflow = '';
@@ -793,17 +809,20 @@ const MobileActionModal = ({ isOpen, product, onClose, onEdit, onDelete, onToggl
       {isOpen && (
         <motion.div
             className={styles.bottomSheetOverlay}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            variants={overlayVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            transition={overlayTransition}
             onClick={(e) => e.target === e.currentTarget && onClose()}
         >
             <motion.div 
                 className={styles.bottomSheet}
-                initial={{ y: "100%" }}
-                animate={{ y: 0 }}
-                exit={{ y: "100%" }}
-                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                variants={bottomSheetVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                transition={spring}
             >
                 <div className={styles.sheetHeader}>
                     <img 
